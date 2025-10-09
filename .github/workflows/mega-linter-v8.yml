@@ -1,0 +1,137 @@
+---
+# MegaLinter GitHub Action configuration file
+# More info at https://megalinter.io
+# https://github.com/oxsecurity/megalinter
+# https://github.com/oxsecurity/megalinter/blob/main/TEMPLATES/mega-linter.yml
+name: MegaLinter v8
+
+# Trigger mega-linter at every push. Action will also be visible from Pull Requests to main
+# Comment this line to trigger action only on pull-requests (not recommended if you don't pay for GH Actions)
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: 'Define the type of machine that will process the workflow. [Choosing where a workflow runs](https://docs.github.com/en/actions/writing-workflows/choosing-where-your-workflow-runs)'
+        type: string
+        default: '["ubuntu-latest"]'
+      APPLY_FIXES_EVENT:
+        description: |
+          Apply MegaLinter fixes during given event: all, push, pull_request, none.
+        type: string
+        default: pull_request
+      APPLY_FIXES_MODE:
+        description: |
+          `commit` to create a new commit and push it on the same branch, or
+          `pull_request` to create a new PR targeting the branch.
+        type: string
+        default: pull_request
+      VALIDATE_ALL_CODEBASE:
+        description: |
+          Validates all source when push on main, else just the git diff with main.
+          Override with true if you always want to lint all sources.
+        type: boolean
+        default: false
+    secrets:
+      GH_TOKEN:
+        required: true
+      SSH_PRIVATE_KEY:
+        required: false
+
+env:
+  APPLY_FIXES_EVENT: ${{ inputs.APPLY_FIXES_EVENT }}
+  APPLY_FIXES_MODE: ${{ inputs.APPLY_FIXES_MODE }}
+  VALIDATE_ALL_CODEBASE: ${{ inputs.VALIDATE_ALL_CODEBASE }}
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
+jobs:
+  megalinter:
+    runs-on: ${{ fromJson(inputs.runs-on) }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set PRE_COMMANDS for self-hosted runners
+        if: ${{ runner.environment == 'self-hosted' }}
+        run: |
+          echo 'PRE_COMMANDS<<EOF' >> $GITHUB_ENV
+          echo '[
+            { "command": "command -v ssh-agent >/dev/null || ( apk add --no-cache openssh-client )", "cwd": "root", "secured_env": true },
+            { "command": "eval $(ssh-agent -s)", "cwd": "root", "secured_env": true },
+            { "command": "echo \"$SSH_PRIVATE_KEY\" | tr -d '\\r' > /root/.ssh/id_rsa", "cwd": "root", "secured_env": true },
+            { "command": "chmod 600 /root/.ssh/id_rsa", "cwd": "root", "secured_env": true },
+            { "command": "mkdir -p /root/.ssh", "cwd": "root", "secured_env": true },
+            { "command": "chmod 700 /root/.ssh", "cwd": "root", "secured_env": true },
+            { "command": "ssh-keyscan -p 443 github.com >> /root/.ssh/known_hosts", "cwd": "root", "secured_env": true },
+            { "command": "chmod 644 /root/.ssh/known_hosts", "cwd": "root", "secured_env": true },
+            { "command": "echo \"Host github.com\" > /root/.ssh/config; echo \"  Hostname ssh.github.com\" >> /root/.ssh/config; echo \"  User git\" >> /root/.ssh/config; echo \"  Port 443\" >> /root/.ssh/config; echo \"  PreferredAuthentications publickey\" >> /root/.ssh/config; echo \"  IdentityFile /root/.ssh/id_rsa\" >> /root/.ssh/config; echo \"  StrictHostKeyChecking no\" >> /root/.ssh/config", "cwd": "root", "secured_env": true },
+            { "command": "ssh -T git@github.com || exit 1", "cwd": "root", "secured_env": true },
+            { "command": "echo 'SSH key setup complete'", "cwd": "root", "secured_env": true }
+          ]' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      - name: MegaLinter
+        id: ml
+        uses: oxsecurity/megalinter@v8
+        env:
+          VALIDATE_ALL_CODEBASE: ${{ inputs.VALIDATE_ALL_CODEBASE }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SECURED_ENV_VARIABLES: |
+            - SSH_PRIVATE_KEY
+
+      - name: Change permissions for megalinter-reports
+        if: ${{ (success() || failure()) && runner.environment == 'self-hosted' }}
+        run: |
+          sudo chmod -R 777 megalinter-reports
+
+      - name: Archive production artifacts
+        if: ${{ success() }} || ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: MegaLinter reports
+          path: |
+            megalinter-reports
+            mega-linter.log
+
+      # Create pull request if applicable (for now works only on PR from same repository, not from forks)
+      - name: Create Pull Request with applied fixes
+        id: cpr
+        if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'pull_request' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          commit-message: 'style(MegaLinter): apply linter fixes'
+          title: 'style(MegaLinter): apply linter fixes'
+          labels: |
+            state: pending
+            type: chore
+            work: obvious
+
+      - name: Create PR output
+        if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'pull_request' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+
+      # Push new commit if applicable (for now works only on PR from same repository, not from forks)
+      - name: Prepare commit
+        if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'commit' && github.ref != 'refs/heads/main' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        run: sudo chown -Rc $UID .git/
+
+      - name: Commit and push applied linter fixes
+        if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'commit' && github.ref != 'refs/heads/main' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          branch: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref }}
+          commit_message: 'style(MegaLinter): apply linter fixes'
+          commit_user_name: ${{ vars.GH_USER }}
+          commit_user_email: ${{ vars.GH_EMAIL }}
+          commit_author: ${{ vars.GH_USER }} <${{ vars.GH_EMAIL }}>

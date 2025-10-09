@@ -1,0 +1,32 @@
+---
+version: 2
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+      time: '09:00'
+      timezone: 'Etc/UTC'
+    labels:
+      - 'type: chore'
+      - 'effort: 1'
+    ignore:
+      - dependency-name: actions/stale
+        versions: ['8.x']
+        update-types: ['version-update:semver-major']
+      - dependency-name: github/super-linter
+        versions: ['5.x']
+        update-types: ['version-update:semver-major']
+      - dependency-name: hashicorp/setup-terraform
+        versions: ['2.x']
+        update-types: ['version-update:semver-major']
+      - dependency-name: oxsecurity/megalinter
+        versions: ['7.x']
+        update-types: ['version-update:semver-major']
+      - dependency-name: SonarSource/sonarcloud-github-action
+        versions: ['2.x']
+        update-types: ['version-update:semver-major']
+      - dependency-name: sonarsource/sonarqube-scan-action
+        versions: ['2.x']
+        update-types: ['version-update:semver-major']

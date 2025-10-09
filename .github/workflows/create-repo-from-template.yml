@@ -1,0 +1,72 @@
+---
+name: Create Repo from Template
+
+on:
+  issues:
+    types: [opened, reopened]
+
+concurrency:
+  group: ${{github.ref}}-${{github.workflow}}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+  repository-projects: read
+
+jobs:
+  setup:
+    name: Repository Setup
+    if: ${{ github.event.issue.title == 'create repo from template' }}
+    runs-on: ${{ fromJson(vars.GH_RUNNER || '["ubuntu-latest"]') }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      REPO_OWNER: ${{ github.event.repository.owner.login }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse issue body
+        uses: stefanbuck/github-issue-parser@v3
+        id: issue-parser
+        with:
+          template-path: .github/ISSUE_TEMPLATE/repository-request.yml
+
+      - name: Get repo details
+        run: |
+          echo '${{ steps.issue-parser.outputs.jsonString }}' > issue.json
+          echo "REPOSITORY_NAME=$(jq -r '.repo' issue.json)" >> $GITHUB_ENV
+          echo "TEMPLATE_REPO_NAME=$(jq -r '."template"' issue.json)" >> $GITHUB_ENV
+
+      - name: Update issue title
+        run: |
+          gh issue edit ${ISSUE_NUMBER} --title "chore: create repo '${REPOSITORY_NAME}', from '${TEMPLATE_REPO_NAME}'"
+
+      - name: Check if repository exists
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/${REPO_OWNER}/${REPOSITORY_NAME})
+          if [ "$HTTP_STATUS" == "200" ]; then
+            gh issue close ${ISSUE_NUMBER}
+            echo "${REPOSITORY_NAME} already exists. Please change the name of the Repository and re-open the issue."
+            exit 1
+          fi
+
+      - name: Create new repository
+        run: |
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${REPO_OWNER}/${TEMPLATE_REPO_NAME}/generate" \
+            -d "{\"owner\":\"${REPO_OWNER}\",\"name\":\"${REPOSITORY_NAME}\",\"include_all_branches\":false,\"private\":true}" \
+          && echo "Repository created: https://github.com/${REPO_OWNER}/${REPOSITORY_NAME}"

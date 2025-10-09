@@ -1,0 +1,83 @@
+---
+name: Sonar v2
+# https://github.com/SonarSource/sonarcloud-github-action
+# https://github.com/SonarSource/sonarqube-scan-action
+# https://github.com/SonarSource/sonarqube-quality-gate-action
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: 'Define the type of machine that will process the workflow. [Choosing where a workflow runs](https://docs.github.com/en/actions/writing-workflows/choosing-where-your-workflow-runs)'
+        type: string
+        default: '["ubuntu-latest"]'
+      SONAR_HOST_URL:
+        description: Specify the Sonar Host URL.
+        type: string
+        default: 'https://sonarcloud.io'
+      SONAR_QUALITY_GATE_CHECK:
+        description: Use Sonar Quality Gate in Status Checks?
+        type: boolean
+        default: false
+      projectBaseDir:
+        description: Directory in which to run Sonar Scanner.
+        type: string
+        default: ${{ $GITHUB_WORKSPACE }}
+    secrets:
+      # If SonarQube uses self-signed certificate, pass a root certificate (in PEM format).
+      SONAR_ROOT_CERT: ''
+      SONAR_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+  statuses: write
+  pull-requests: write
+
+jobs:
+  sonar:
+    runs-on: ${{ fromJson(inputs.runs-on) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
+
+      - name: SonarCloud Scan
+        if: ${{ inputs.SONAR_HOST_URL == '' }}
+        uses: SonarSource/sonarcloud-github-action@v2.3.0
+        with:
+          projectBaseDir: ${{ inputs.projectBaseDir }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # SonarCloud access token should be generated from https://sonarcloud.io/account/security/
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: SonarQube Scan
+        if: ${{ inputs.SONAR_HOST_URL != '' }}
+        uses: sonarsource/sonarqube-scan-action@v2.3
+        with:
+          projectBaseDir: ${{ inputs.projectBaseDir }}
+        env:
+          # SonarQube access token should be generated from https://sonarcloud.io/account/security/
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ inputs.SONAR_HOST_URL }}
+          # SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}
+
+      # Check the Quality Gate status.
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        if: ${{ inputs.SONAR_HOST_URL != '' && inputs.SONAR_QUALITY_GATE_CHECK == true }}
+        uses: sonarsource/sonarqube-quality-gate-action@v1.2.0
+        # Force to fail step after specific time.
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ inputs.SONAR_HOST_URL }}
+          # SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}
+
+      # Optionally you can use the output from the Quality Gate in another step.
+      # The possible outputs of the `quality-gate-status` variable are `PASSED`, `WARN` or `FAILED`.
+      - name: SonarQube Quality Gate Status
+        if: ${{ inputs.SONAR_HOST_URL != '' && inputs.SONAR_QUALITY_GATE_CHECK == true }}
+        run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"

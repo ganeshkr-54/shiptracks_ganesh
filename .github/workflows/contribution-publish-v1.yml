@@ -1,0 +1,60 @@
+---
+name: Contribution Publish v1
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: 'Define the type of machine that will process the workflow. [Choosing where a workflow runs](https://docs.github.com/en/actions/writing-workflows/choosing-where-your-workflow-runs)'
+        type: string
+        default: '["ubuntu-latest"]'
+    secrets:
+      GH_TOKEN:
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  publish:
+    runs-on: ${{ fromJson(inputs.runs-on) }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Get artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ._artifact
+
+      - name: Uncompress artifacts
+        run: |
+          if [[ -d ._artifact ]]; then
+            for file in ._artifact/*/*.zip; do
+              unzip -o "$file" -d ./
+            done
+            rm -rf ._artifact
+          else
+            echo "Artifact directory not found, skipping extraction and clean up."
+          fi
+
+      - name: Get changes
+        id: changed-files
+        uses: tj-actions/changed-files@v46
+
+      - name: Commit, push changes
+        if: ${{ steps.changed-files.outputs.any_changed }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          branch: ${{ github.event.pull_request.head.ref }}
+          commit_message: 'refactor: add/update docs/code/data using automation'
+          commit_user_name: ${{ vars.GH_USER }}
+          commit_user_email: ${{ vars.GH_EMAIL }}
+          commit_author: ${{ vars.GH_USER }} <${{ vars.GH_EMAIL }}>
