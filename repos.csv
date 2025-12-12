@@ -2,3 +2,7 @@ gitlab_repo,github_repo,description,status
 st/airsis/enigma/perl,airsis-enigma-perl,"Migrated from gitlab",done
 st/internal/data-science/os-data-mapping-pipeline,os-data-mapping-pipeline,"Os Data Mapping Pipeline",done
 st/internal/blackbird/create-position-id-in-ais,create-position-id-in-ais,"Create Position id in AIS",done
+st/internal/producer/shiptracks-producer,shiptracks-producer,"Execute Shiptracks-producer",
+st/internal/producer/shiptracks-statistics-visualizer,shiptracks-statistics-visualizer,"Shiptracks Statistics Visualizer",
+st/internal/jobs/jobs-insights,jobs-insights,"Jobs Insights",
+st/internal/subscriber,subscriber,"subscriber",
