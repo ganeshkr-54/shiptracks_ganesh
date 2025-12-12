@@ -5,3 +5,4 @@ st/internal/blackbird/create-position-id-in-ais,create-position-id-in-ais,"Creat
 st/internal/producer/shiptracks-producer,shiptracks-producer,"Execute Shiptracks-producer",done
 st/internal/producer/shiptracks-statistics-visualizer,shiptracks-statistics-visualizer,"Shiptracks Statistics Visualizer",done
 st/internal/jobs/jobs-insights,jobs-insights,"Jobs Insights",done
+st/internal/subscriber,subscriber,"Subscriber",
