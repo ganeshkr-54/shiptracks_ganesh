@@ -26,10 +26,15 @@ jobs:
       contents: write
       id-token: write
       pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        working-directory:
+          - 'terraform/deployments/on-prem/argo-cd'
     uses: ./.github/workflows/terraform-azure-v1.yml
     secrets: inherit
     with:
       runs-on: '["self-hosted","linux","x64"]'
-      working-directory: terraform/deployments/test
+      working-directory: ${{ matrix.working-directory }}
       state: local
       target: on-prem
