@@ -1,0 +1,223 @@
+---
+name: Terraform-Azure v1
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Runner definition
+        type: string
+        default: '["ubuntu-latest"]'
+
+      version:
+        description: Terraform version
+        type: string
+        default: 1.5.5
+
+      working-directory:
+        description: Terraform working directory
+        type: string
+        default: ${{ github.workspace }}
+
+      state:
+        description: Terraform state storage option (local | cloud | org)
+        type: string
+        default: local
+
+      add-files:
+        description: Artifact containing additional files
+        type: string
+        default: ''
+
+      format:
+        type: boolean
+        default: false
+
+      validate:
+        type: boolean
+        default: true
+
+      plan:
+        type: boolean
+        default: true
+
+      apply:
+        type: boolean
+        default: false
+
+      tf-vars:
+        description: Extra terraform variables
+        type: string
+        default: ''
+
+      target:
+        description: Deployment target (azure | onprem)
+        type: string
+        default: azure
+
+      environment:
+        description: environment to deploy
+        type: string
+        default: dev
+
+    secrets:
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+      GH_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+jobs:
+  backend:
+    uses: ./.github/workflows/terraform-remote-backend-v1.yml
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: write
+    with:
+      runs-on: ${{ inputs.runs-on }}
+      state: ${{ inputs.state }}
+      working-directory: ${{ inputs.working-directory }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+
+  terraform:
+    needs: backend
+    runs-on: ${{ fromJson(inputs.runs-on) }}
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Azure Login
+        if: ${{ inputs.target == 'azure' }}
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Export ARM credentials for Terraform (OIDC)
+        if: ${{ inputs.target == 'azure' }}
+        run: |
+          echo "ARM_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "ARM_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" >> $GITHUB_ENV
+          echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
+          echo "ARM_USE_OIDC=true" >> $GITHUB_ENV
+
+      - name: Setup Kubectl
+        if: ${{ inputs.target == 'on-prem' }}
+        uses: azure/setup-kubectl@v4
+
+      - name: Build in-cluster kubeconfig
+        if: ${{ inputs.target == 'on-prem' }}
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          mkdir -p ~/.kube
+          SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+
+          cat > ~/.kube/config <<EOF
+          apiVersion: v1
+          kind: Config
+          clusters:
+          - cluster:
+              certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              server: https://kubernetes.default.svc
+            name: in-cluster
+          contexts:
+          - context:
+              cluster: in-cluster
+              namespace: ${ENVIRONMENT}
+              user: runner-sa
+            name: in-cluster
+          current-context: in-cluster
+          users:
+          - name: runner-sa
+            user:
+              token: ${SA_TOKEN}
+          EOF
+
+      - name: Validate Azure identity
+        run: az account show
+        working-directory: ${{ github.workspace }}
+
+      - name: Download terraform backend artifact
+        if: ${{ inputs.state == 'org' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.backend.outputs.artifact-name }}
+          path: backend
+
+      - name: Write backend file
+        if: ${{ inputs.state == 'org' }}
+        run: |
+          mv "${GITHUB_WORKSPACE}/backend/${{ needs.backend.outputs.filename }}" .
+          ls -lah
+
+      - name: Download add-files artifact
+        if: ${{ inputs.add-files != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.add-files }}
+
+      - name: Extract add-files artifact
+        if: ${{ inputs.add-files != '' }}
+        run: unzip -o "${{ inputs.add-files }}" -d .
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.version }}
+
+      - name: Terraform Format
+        if: ${{ inputs.format }}
+        run: terraform fmt -diff -check
+
+      - name: Configure local Terraform state directory
+        if: ${{ inputs.state == 'local' }}
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY}"
+          STATE_DIR="${GITHUB_WORKSPACE}/.terraform-local-state/${REPO_NAME}"
+          mkdir -p "$STATE_DIR"
+          echo "Using local Terraform state directory: $STATE_DIR"
+          echo "TF_DATA_DIR=$STATE_DIR" >> $GITHUB_ENV
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        if: ${{ inputs.validate }}
+        run: terraform validate -no-color
+
+      - name: Prepare Extra Vars
+        run: |
+          VAR_ARGS=""
+          while IFS= read -r line; do
+            [[ -z "$line" ]] && continue
+            VAR_ARGS+=" -var=\"${line}\""
+          done <<< "${{ inputs.tf-vars }}"
+          echo "TF_CLI_ARGS=${VAR_ARGS}" >> $GITHUB_ENV
+
+      - name: Terraform Plan
+        if: ${{ inputs.plan }}
+        run: terraform plan -no-color -input=false
+
+      - name: Terraform Apply
+        if: ${{ inputs.apply }}
+        run: terraform apply -auto-approve -input=false

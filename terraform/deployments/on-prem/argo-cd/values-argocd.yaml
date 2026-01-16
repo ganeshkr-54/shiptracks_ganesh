@@ -1,0 +1,31 @@
+global:
+  revisionHistoryLimit: 3
+  image:
+    repository: quay.io/argoproj/argocd
+    pullPolicy: IfNotPresent
+server:
+  replicas: 1
+
+controller:
+  replicas: 1
+
+repoServer:
+  replicas: 1
+
+applicationSet:
+  enabled: true
+
+redis:
+  enabled: true
+server:
+  service:
+    type: NodePort
+configs:
+  params:
+    server.insecure: true
+configs:
+  cm:
+    application.instanceLabelKey: argocd.argoproj.io/instance
+
+rbac:
+  create: true

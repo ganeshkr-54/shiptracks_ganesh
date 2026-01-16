@@ -1,0 +1,106 @@
+---
+name: Terraform Remote Backend Azure v1
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Runner definition
+        type: string
+        default: '["ubuntu-latest"]'
+
+      working-directory:
+        description: Terraform working directory
+        type: string
+        default: ${{ github.workspace }}
+
+      state:
+        description: Terraform state storage option (local | cloud | org)
+        type: string
+        default: local
+
+      azure-location:
+        description: Azure region (informational)
+        type: string
+        default: eastus
+
+    secrets:
+      GH_TOKEN:
+        required: false
+
+    outputs:
+      filename:
+        description: Filename of Terraform backend file
+        value: ${{ jobs.backend.outputs.filename }}
+      artifact-name:
+        description: Artifact name of compressed backend file
+        value: ${{ jobs.backend.outputs.artifact-name }}
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+
+jobs:
+  backend:
+    runs-on: ${{ fromJson(inputs.runs-on) }}
+
+    defaults:
+      run:
+        shell: bash
+
+    outputs:
+      filename: ${{ steps.create.outputs.TF_OUTPUT_FILE }}
+      artifact-name: ${{ steps.artifact.outputs.TF_ARTIFACT_NAME }}
+
+    env:
+      TF_OUTPUT_FILE: 00-backend.tf
+      AZURE_RESOURCE_GROUP: rg-remote-backend-eastus-001
+      AZURE_STORAGE_ACCOUNT: osremotebackendeusprod
+      AZURE_STORAGE_CONTAINER: os-backend-tfstate-eastus-prod
+      TFSTATE_KEY: ${{ github.repository }}/${{ inputs.working-directory }}
+
+    steps:
+      - name: Workflow validations
+        id: vars
+        env:
+          TF_STATE: ${{ inputs.state }}
+        run: |
+          if [[ "$TF_STATE" == "org" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create Terraform backend block
+        if: ${{ steps.vars.outputs.run == 'true' }}
+        id: create
+        run: |
+          cat <<EOF > "$TF_OUTPUT_FILE"
+          terraform {
+            backend "azurerm" {
+              resource_group_name  = "${AZURE_RESOURCE_GROUP}"
+              storage_account_name = "${AZURE_STORAGE_ACCOUNT}"
+              container_name       = "${AZURE_STORAGE_CONTAINER}"
+              key                  = "${TFSTATE_KEY}"
+            }
+          }
+          EOF
+
+          echo "TF_OUTPUT_FILE=$TF_OUTPUT_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Set backend artifact name
+        if: ${{ steps.vars.outputs.run == 'true' }}
+        id: artifact
+        run: |
+          ARTIFACT_NAME=$(echo "${TFSTATE_KEY}" | tr '/' '-')
+          echo "TF_ARTIFACT_NAME=${ARTIFACT_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload backend artifact
+        if: ${{ steps.vars.outputs.run == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.artifact.outputs.TF_ARTIFACT_NAME }}
+          path: ${{ env.TF_OUTPUT_FILE }}
+          if-no-files-found: error
+          overwrite: true

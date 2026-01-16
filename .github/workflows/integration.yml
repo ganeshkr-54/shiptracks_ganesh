@@ -1,0 +1,35 @@
+---
+name: Integration
+on:
+  pull_request:
+    branches: [main, master, develop, 'releases/**', 'feat/**', 'fix/**']
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write
+  issues: write
+  packages: read
+  pull-requests: write
+  repository-projects: read
+  statuses: write
+
+jobs:
+  terraform:
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: write
+    uses: ./.github/workflows/terraform-azure-v1.yml
+    secrets: inherit
+    with:
+      runs-on: '["self-hosted","linux","x64"]'
+      working-directory: terraform/deployments/test
+      state: local
+      target: on-prem
