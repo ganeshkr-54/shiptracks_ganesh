@@ -154,6 +154,7 @@ jobs:
           EOF
 
       - name: Validate Azure identity
+        if: ${{ inputs.target == 'azure' }}
         run: az account show
         working-directory: ${{ github.workspace }}
 
