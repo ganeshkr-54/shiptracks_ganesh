@@ -1,8 +1,8 @@
 ---
-name: Integration
+name: Deployment
 on:
-  pull_request:
-    branches: [main, master, develop, 'releases/**', 'feat/**', 'fix/**']
+  push:
+    branches: [main, master]
   workflow_dispatch:
 
 concurrency:
@@ -36,3 +36,4 @@ jobs:
       working-directory: ${{ matrix.working-directory }}
       state: local
       target: on-prem
+      apply: true
