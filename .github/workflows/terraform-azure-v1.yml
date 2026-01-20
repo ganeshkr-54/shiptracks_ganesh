@@ -194,16 +194,22 @@ jobs:
         if: ${{ inputs.format }}
         run: terraform fmt -diff -check
 
-      - name: Configure local Terraform state directory
+      - name: Prepare persistent local Terraform state
         if: ${{ inputs.state == 'local' }}
         run: |
-          REPO_NAME="${GITHUB_REPOSITORY}"
-          STATE_DIR="${GITHUB_WORKSPACE}/.terraform-local-state/${REPO_NAME}"
-          mkdir -p "$STATE_DIR"
-          echo "Using local Terraform state directory: $STATE_DIR"
-          echo "TF_DATA_DIR=$STATE_DIR" >> $GITHUB_ENV
+          STATE_ROOT="/opt/terraform-state"
+          STATE_PATH="${STATE_ROOT}/${GITHUB_REPOSITORY}/${{ inputs.environment }}"
+          mkdir -p "$STATE_PATH"
+          echo "TF_STATE_FILE=${STATE_PATH}/terraform.tfstate" >> $GITHUB_ENV
 
-      - name: Terraform Init
+      - name: Terraform Init (local state)
+        if: ${{ inputs.state == 'local' }}
+        run: |
+          terraform init \
+            -backend-config="path=${TF_STATE_FILE}"
+
+      - name: Terraform Init (remote / default)
+        if: ${{ inputs.state != 'local' }}
         run: terraform init
 
       - name: Terraform Validate

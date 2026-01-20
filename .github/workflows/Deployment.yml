@@ -36,4 +36,4 @@ jobs:
       working-directory: ${{ matrix.working-directory }}
       state: local
       target: on-prem
-      apply: false
+      apply: true
