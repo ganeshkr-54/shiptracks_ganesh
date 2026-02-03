@@ -12,5 +12,4 @@ jobs:
         run: |
           whoami
           id
-          ls -ld /opt/terraform-state
-          touch /opt/terraform-state/.write-test
+          ls /
