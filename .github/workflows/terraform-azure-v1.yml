@@ -202,11 +202,21 @@ jobs:
           sudo mkdir -p "$STATE_PATH"
           echo "TF_STATE_FILE=${STATE_PATH}/terraform.tfstate" >> $GITHUB_ENV
 
+      - name: Generate local backend
+        if: ${{ inputs.state == 'local' }}
+        run: |
+          cat > backend.tf <<EOF
+          terraform {
+            backend "local" {
+              path = "${TF_STATE_FILE}"
+            }
+          }
+          EOF
+
       - name: Terraform Init (local state)
         if: ${{ inputs.state == 'local' }}
         run: |
-          terraform init \
-            -backend-config="path=${TF_STATE_FILE}"
+          terraform init
 
       - name: Terraform Init (remote / default)
         if: ${{ inputs.state != 'local' }}
