@@ -8,9 +8,9 @@ jobs:
   show-ip:
     runs-on: [self-hosted, linux, x64]
     steps:
-      - name: Show public IP
+      - name: Verify state dir
         run: |
+          whoami
           id
-          echo "Public IP:"
-          curl -s https://api.ipify.org
-          echo
+          ls -ld /opt/terraform-state
+          touch /opt/terraform-state/.write-test
