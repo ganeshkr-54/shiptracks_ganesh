@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Show public IP
         run: |
+          whoami
           echo "Public IP:"
           curl -s https://api.ipify.org
           echo
-          who am i
