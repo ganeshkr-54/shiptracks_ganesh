@@ -199,7 +199,7 @@ jobs:
         run: |
           STATE_ROOT="/opt/terraform-state"
           STATE_PATH="${STATE_ROOT}/${GITHUB_REPOSITORY}/${{ inputs.environment }}"
-          sudo mkdir -p "$STATE_PATH"
+          mkdir -p "$STATE_PATH"
           echo "TF_STATE_FILE=${STATE_PATH}/terraform.tfstate" >> $GITHUB_ENV
 
       - name: Generate local backend
