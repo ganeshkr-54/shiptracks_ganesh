@@ -34,6 +34,6 @@ jobs:
     with:
       runs-on: '["self-hosted","linux","x64"]'
       working-directory: ${{ matrix.working-directory }}
-      state: local
+      state: org
       target: on-prem
       apply: false

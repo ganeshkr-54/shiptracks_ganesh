@@ -113,7 +113,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Export ARM credentials for Terraform (OIDC)
-        if: ${{ inputs.target == 'azure' }}
+        if: ${{ inputs.target == 'azure' || inputs.state == 'org' }}
         run: |
           echo "ARM_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" >> $GITHUB_ENV
           echo "ARM_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" >> $GITHUB_ENV
@@ -193,25 +193,6 @@ jobs:
       - name: Terraform Format
         if: ${{ inputs.format }}
         run: terraform fmt -diff -check
-
-      - name: Prepare persistent local Terraform state
-        if: ${{ inputs.state == 'local' }}
-        run: |
-          STATE_ROOT="/runner/_work/terraform-state"
-          STATE_PATH="${STATE_ROOT}/${GITHUB_REPOSITORY}/${{ inputs.environment }}"
-          mkdir -p "$STATE_PATH"
-          echo "TF_STATE_FILE=${STATE_PATH}/terraform.tfstate" >> $GITHUB_ENV
-
-      - name: Generate local backend
-        if: ${{ inputs.state == 'local' }}
-        run: |
-          cat > backend.tf <<EOF
-          terraform {
-            backend "local" {
-              path = "${TF_STATE_FILE}"
-            }
-          }
-          EOF
 
       - name: Terraform Init (local state)
         if: ${{ inputs.state == 'local' }}
