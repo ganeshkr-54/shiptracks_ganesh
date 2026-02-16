@@ -1,8 +1,11 @@
+apiVersion: v2
 name: prometheus-stack
-version: 0.0.0
+version: 0.1.0
 
 dependencies:
   - name: argo
+    version: 0.0.0
+    repository: "file://charts/argo"
     import-values:
       - child: argo
         parent: argo
