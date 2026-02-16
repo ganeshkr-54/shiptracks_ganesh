@@ -1,0 +1,85 @@
+_helm: &helm
+  repository: https://github.com/shiptracks/devops.git
+  branch: dev
+  path: helm/monitoring/prometheus
+
+applications:
+  grafana:
+    service:
+      type: NodePort
+
+  prometheus:
+    prometheusSpec:
+      retention: 2d
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: standard
+
+  # prometheus-dashboards:
+  #   enabled: true
+  # prometheus-alerts:
+  #   enabled: true
+
+  # prometheus-web:
+  #   helm:
+  #     values:
+  #       grafana:
+  #         tlsSecretName: monitoring-tls
+  #         # annotations:
+  #         #   appgw.ingress.kubernetes.io/request-timeout: "3600"
+  #         #   appgw.ingress.kubernetes.io/ssl-redirect: "true"
+  #         #   appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399,401,403,404"
+  #         hosts:
+  #           - host: monitoring-np.oceansmart.com
+  #             paths:
+  #               - path: "/"
+  #                 pathType: Prefix
+  #       prometheus:
+  #         tlsSecretName: monitoring-tls
+  #         # annotations:
+  #         #   appgw.ingress.kubernetes.io/request-timeout: "3600"
+  #         #   appgw.ingress.kubernetes.io/ssl-redirect: "true"
+  #         #   appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399,401,403,404"
+  #         hosts:
+  #           - host: monitoring-np.oceansmart.com
+  #             paths:
+  #               - path: "/prometheus"
+  #                 pathType: Prefix
+  #       karma:
+  #         tlsSecretName: monitoring-tls
+  #         annotations:
+  #           # appgw.ingress.kubernetes.io/request-timeout: "3600"
+  #           # appgw.ingress.kubernetes.io/ssl-redirect: "true"
+  #           # appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399,401,403,404"
+  #         hosts:
+  #           - host: monitoring-np.oceansmart.com
+  #             paths:
+  #               - path: "/karma"
+  #                 pathType: Prefix
+
+  # prometheus-stack-crds:
+  #   helm:
+  #     version: kube-prometheus-stack-45.9.0
+
+  # prometheus-stack:
+  #   helm:
+  #     version: 45.9.0
+  #     values:
+  #       prometheus:
+  #         prometheusSpec:
+  #           externalUrl: https://monitoring-np.oceansmart.com/prometheus
+  #           routePrefix: "/prometheus"
+  #           additionalScrapeConfigsSecret:
+  #             enabled: true
+  #             name: redpanda-dev-scrape-config
+  #             key: redpanda-dev-scrape-config.yaml
+  #       grafana:
+  #         sidecar:
+  #           alerts:
+  #             enabled: true
+  #             label: redpanda_dev_alerts
+  #             labelValue: "1"
+  #             searchNamespace: ALL
+  #             watchMethod: WATCH
+  #             reloadURL: "http://localhost:3000/api/admin/provisioning/alerting/reload"

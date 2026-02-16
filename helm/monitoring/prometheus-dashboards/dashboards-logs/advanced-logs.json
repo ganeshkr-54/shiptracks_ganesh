@@ -1,0 +1,131 @@
+{
+  "uid": "advanced-k8s-logs",
+  "title": "Kubernetes / Advanced Log Analytics (Loki)",
+  "tags": ["kubernetes", "logs", "advanced", "loki"],
+  "schemaVersion": 38,
+  "version": 2,
+  "refresh": "10s",
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "type": "query",
+        "label": "Namespace",
+        "datasource": { "uid": "Loki-datasource", "type": "loki" },
+        "query": "label_values(namespace)",
+        "includeAll": true,
+        "allValue": ".+",
+        "multi": true
+      },
+      {
+        "name": "pod",
+        "type": "query",
+        "label": "Pod",
+        "datasource": { "uid": "Loki-datasource", "type": "loki" },
+        "query": "label_values({namespace=~\"$namespace\"}, pod)",
+        "includeAll": true,
+        "allValue": ".+",
+        "multi": true
+      },
+      {
+        "name": "container",
+        "type": "query",
+        "label": "Container",
+        "datasource": { "uid": "Loki-datasource", "type": "loki" },
+        "query": "label_values({namespace=~\"$namespace\", pod=~\"$pod\"}, container)",
+        "includeAll": true,
+        "allValue": ".+",
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "logs",
+      "title": "Live Logs (Parsed where JSON)",
+      "datasource": { "uid": "Loki-datasource", "type": "loki" },
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 },
+      "targets": [
+        {
+          "expr": "{namespace=~\".+\", pod=~\".+\", container=~\".+\"}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Error Rate (level=ERROR / error)",
+      "datasource": { "uid": "Loki-datasource", "type": "loki" },
+      "gridPos": { "x": 0, "y": 10, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (namespace) (count_over_time({level=~\"ERROR|error\"}[5m]))",
+          "legendFormat": "{{namespace}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Warning Rate",
+      "datasource": { "uid": "Loki-datasource", "type": "loki" },
+      "gridPos": { "x": 12, "y": 10, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (namespace) (count_over_time({level=~\"WARN|warning\"}[5m]))",
+          "legendFormat": "{{namespace}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Top Error Messages (msg label)",
+      "datasource": { "uid": "Loki-datasource", "type": "loki" },
+      "gridPos": { "x": 0, "y": 18, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (msg) (count_over_time({level=~\"ERROR|error\"}[5m])))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP 5xx Error Rate (status label)",
+      "datasource": { "uid": "Loki-datasource", "type": "loki" },
+      "gridPos": { "x": 0, "y": 26, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (pod) (count_over_time({status=~\"5..\"}[5m]))",
+          "refId": "A",
+          "legendFormat": "{{pod}}"
+        }
+      ]
+    },
+    {
+      "type": "logs",
+      "title": "CrashLoop / Back-off Detection",
+      "datasource": { "uid": "Loki-datasource", "type": "loki" },
+      "gridPos": { "x": 12, "y": 26, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "{namespace=~\".+\"} |~ \"CrashLoopBackOff|Back-off\"",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Top Noisy Pods (Log Volume Rank)",
+      "datasource": { "uid": "Loki-datasource", "type": "loki" },
+      "gridPos": { "x": 0, "y": 34, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (pod) (rate({pod=~\".+\"}[5m])))",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

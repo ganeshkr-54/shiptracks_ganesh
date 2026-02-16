@@ -1,0 +1,15 @@
+{{- if .Values.applications }}
+{{- $karma := get .Values.applications "prometheus-karma" }}
+{{- if and $karma (ne (printf "%t" (index ($karma | default dict) "enabled")) "false") }}
+{{- if and (get $karma "namespace") (get $karma "config") }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-karma
+  namespace: {{ $karma.namespace | quote }}
+data:
+  karma.conf: |
+    {{- toYaml $karma.config | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

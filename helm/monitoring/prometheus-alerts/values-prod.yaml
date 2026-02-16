@@ -1,0 +1,7 @@
+labels:
+  release: prometheus-prod
+
+certificates:
+  enabled: true
+blackbox:
+  enabled: true

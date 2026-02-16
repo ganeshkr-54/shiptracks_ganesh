@@ -1,0 +1,106 @@
+{
+  "uid": "k8s-logs-overview",
+  "title": "Kubernetes / Logs Overview (Loki)",
+  "schemaVersion": 38,
+  "version": 2,
+  "refresh": "10s",
+  "tags": ["kubernetes", "logs", "loki"],
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "type": "query",
+        "label": "Namespace",
+        "datasource": { "type": "loki", "uid": "Loki-datasource" },
+        "query": "label_values(namespace)",
+        "includeAll": true,
+        "allValue": ".+",
+        "multi": true
+      },
+      {
+        "name": "pod",
+        "type": "query",
+        "label": "Pod",
+        "datasource": { "type": "loki", "uid": "Loki-datasource" },
+        "query": "label_values({namespace=~\"$namespace\"}, pod)",
+        "includeAll": true,
+        "allValue": ".+",
+        "multi": true
+      },
+      {
+        "name": "container",
+        "type": "query",
+        "label": "Container",
+        "datasource": { "type": "loki", "uid": "Loki-datasource" },
+        "query": "label_values({namespace=~\"$namespace\", pod=~\"$pod\"}, container)",
+        "includeAll": true,
+        "allValue": ".+",
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "logs",
+      "title": "Live Logs (Namespace → Pod → Container)",
+      "datasource": { "type": "loki", "uid": "Loki-datasource" },
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 },
+      "targets": [
+        {
+          "expr": "{namespace=~\".+\", pod=~\".+\", container=~\".+\"}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Log Volume (Lines per Second)",
+      "datasource": { "type": "loki", "uid": "Loki-datasource" },
+      "gridPos": { "x": 0, "y": 10, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (namespace) (count_over_time({namespace=~\".+\"}[1m]))",
+          "legendFormat": "{{namespace}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Error Rate per Namespace",
+      "datasource": { "type": "loki", "uid": "Loki-datasource" },
+      "gridPos": { "x": 12, "y": 10, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (namespace) (count_over_time({level=~\"ERROR|error\"}[5m]))",
+          "legendFormat": "{{namespace}} errors/s",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Top Error Messages",
+      "datasource": { "type": "loki", "uid": "Loki-datasource" },
+      "gridPos": { "x": 0, "y": 18, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (msg) (count_over_time({level=~\"ERROR|error\"}[5m])))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "logs",
+      "title": "Errors Only",
+      "datasource": { "type": "loki", "uid": "Loki-datasource" },
+      "gridPos": { "x": 0, "y": 26, "w": 24, "h": 10 },
+      "targets": [
+        {
+          "expr": "{namespace=~\".+\", pod=~\".+\", container=~\".+\"} |~ \"ERROR|Error|Exception|MongoServerSelectionError|Unauthorized|Missing token\"",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

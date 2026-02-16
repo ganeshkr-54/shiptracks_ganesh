@@ -1,0 +1,11 @@
+name: metrics-x509-certificate-exporter
+version: 0.0.0
+
+dependencies:
+  - name: base
+    import-values:
+      - child: base
+        parent: base
+  # - name: x509-certificate-exporter
+  #   repository: https://charts.enix.io
+  #   version: 3.6.0

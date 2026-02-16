@@ -1,0 +1,6 @@
+{{- define "base.main" }}
+{{- include "base.applications" . }}
+{{- include "base.ingresses" . }}
+{{- include "base.hooks" . }}
+{{- end }}
+{{- include "base.main" . }}

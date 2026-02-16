@@ -1,0 +1,8 @@
+deployments: ["domains-certificate-exporter"]
+
+domains-certificate-exporter:
+  environment:
+    CHECK_HOSTS: >-
+      oceansmart.com,
+      reports.oceansmart.com,
+      reports-sandbox.oceansmart.com

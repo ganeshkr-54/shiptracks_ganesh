@@ -1,0 +1,4 @@
+{{- define "argo.main" }}
+{{- include "argo.projects" . }}
+{{- include "argo.applications" . }}
+{{- end }}

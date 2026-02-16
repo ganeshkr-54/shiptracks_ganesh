@@ -1,0 +1,25 @@
+{{- define "base.name" -}}
+{{ (eq (printf "%s" (.root.Values.name | trimAll "-")) "" | ternary .name (printf "%s-%s" ((.root.Values.name | trimAll "-") | default .root.Chart.Name) .name)) | replace "_" "-" | replace "." "-" | trunc 64 | trimSuffix "-" }}
+{{- end -}}
+
+{{- define "base.labels" -}}
+{{- if .name }}
+{{- $current := index .root.Values .name }}
+{{- if and $current (index ($current | default dict) "labels") }}
+{{- toYaml $current.labels }}
+{{- end }}
+{{- end }}
+{{- if and .root.Values.base (index (.root.Values.base | default dict) "labels") }}
+{{- toYaml .root.Values.base.labels }}
+{{- end }}
+{{- if .root.Chart.AppVersion }}
+app.kubernetes.io/version: {{ .root.Chart.AppVersion | trunc 64 | trimSuffix "-" | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .root.Release.Service | quote }}
+helm.sh/chart: {{ printf "%s-%s" .root.Chart.Name .root.Chart.Version | trunc 64 | trimSuffix "-" | quote }}
+{{- end -}}
+
+{{- define "base.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "base.name" (dict "root" .root "name" .name) | quote }}
+helm.sh/release: {{ .root.Release.Name | replace "_" "-" | replace "." "-" | trunc 64 | trimSuffix "-" | quote }}
+{{- end -}}

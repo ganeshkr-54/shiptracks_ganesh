@@ -1,0 +1,42 @@
+{{- define "base.hooks" }}
+{{- $root := . }}
+{{- $values := $root.Values }}
+{{- range $values.hooks | default list }}
+{{- include "base.hook" (dict "root" $root "name" . "hook" (get $values .)) }}
+{{- end }}
+{{- end }}
+
+{{- define "base.hook" }}
+{{- $root := .root }}
+{{- $name := .name }}
+{{- $hook := .hook }}
+{{- $base := $root.Values.base }}
+{{- if and $hook (ne (printf "%t" (get ($hook | default dict) "enabled")) "false") }}
+{{- $fullName := include "base.name" (dict "root" $root "name" $name) }}
+{{- $serviceAccountName := $hook.serviceAccountName | default $base.hook.serviceAccountName }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $fullName | quote }}
+  labels:
+    {{- include "base.labels" (dict "root" $root "name" $name) | nindent 4 }}
+    {{- include "base.selectorLabels" (dict "root" $root "name" $name) | nindent 4 }}
+  annotations:
+    {{- toYaml ($hook.annotations | default $base.hook.annotations) | nindent 4 }}
+  {{- if $hook.namespace }}
+  namespace: {{ $hook.namespace | quote }}
+  {{- end }}
+spec:
+  template:
+    metadata:
+      name: {{ $fullName | quote }}
+    spec:
+      restartPolicy: Never
+      {{- include "base.containers" (dict "root" $root "fullName" $fullName "name" $name "base" $base "application" $hook) | nindent 6 }}
+      {{- if and $hook.serviceAccount (ne (printf "%t" (get ($hook.serviceAccount | default dict) "enabled")) "false") }}
+      serviceAccountName: {{ $hook.serviceAccount.name | default $fullName | quote }}
+      {{- end }}
+      restartPolicy: {{ $hook.restartPolicy | default $base.restartPolicy | quote }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,78 @@
+{{- define "base.ingresses" }}
+{{- $root := . }}
+{{- $values := $root.Values }}
+{{- range $values.ingresses | default list }}
+{{- include "base.ingress" (dict "root" $root "name" . "ingress" (get $values .)) }}
+{{- end }}
+{{- end }}
+
+{{- define "base.ingress" }}
+{{- $root := .root }}
+{{- $name := .name }}
+{{- $ingress := .ingress }}
+{{- $base := $root.Values.base }}
+{{- if and (and $ingress (ne (printf "%t" (get ($ingress | default dict) "enabled")) "false")) (get ($ingress | default dict) "hosts") }}
+{{- $fullName := include "base.name" (dict "root" $root "name" $name) }}
+{{- include "base.inject" (dict "root" $root "inject" $ingress.inject) }}
+---
+{{- if semverCompare ">=1.19-0" $root.Capabilities.KubeVersion.GitVersion }}
+apiVersion: networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" $root.Capabilities.KubeVersion.GitVersion }}
+apiVersion: networking.k8s.io/v1beta1
+{{- else }}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: {{ $fullName | quote }}
+  {{- if $ingress.namespace }}
+  namespace: {{ $ingress.namespace | quote }}
+  {{- end }}
+  labels:
+    {{- include "base.labels" (dict "root" $root "name" $name) | nindent 4 }}
+    {{- include "base.selectorLabels" (dict "root" $root "name" $name) | nindent 4 }}
+  annotations:
+    {{- $annotations := ternary dict (dict "kubernetes.io/ingress.class" "nginx") (semverCompare ">=1.18-0" $root.Capabilities.KubeVersion.GitVersion) }}
+    {{- toYaml (mergeOverwrite $annotations ($base.ingress.annotations | default dict) ($ingress.annotations | default dict)) | nindent 4 }}
+spec:
+  {{- if semverCompare ">=1.18-0" $root.Capabilities.KubeVersion.GitVersion }}
+  ingressClassName: {{ $ingress.className | default $base.ingress.className | quote }}
+  {{- end }}
+  {{- if $ingress.tls }}
+  tls:
+    {{- if kindIs "bool" $ingress.tls }}
+    {{- if $ingress.tlsSecretName }}
+    - secretName: {{ tpl $ingress.tlsSecretName $root | quote }}
+      hosts:
+        {{- range $ingress.hosts }}
+        - {{ tpl .host $root | quote }}
+        {{- end }}
+    {{- end }}
+    {{- else }}
+    {{- tpl (toYaml $ingress.tls) $root | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range $ingress.hosts }}
+    - host: {{ tpl .host $root | quote }}
+      http:
+        paths:
+          {{- range .paths | default (list (dict "path" "/")) }}
+          - path: {{ .path | quote }}
+            {{- if semverCompare ">=1.18-0" $root.Capabilities.KubeVersion.GitVersion }}
+            pathType: {{ .pathType | default $base.ingress.pathType | quote }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $root.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ $ingress.service | quote }}
+                port:
+                  number: {{ $ingress.port | default $base.ingress.port }}
+              {{- else }}
+              serviceName: {{ $ingress.service | quote }}
+              servicePort: {{ $ingress.port | default $base.ingress.port }}
+              {{- end }}
+          {{- end }}
+    {{- end }}
+{{- end }}
+{{- end }}

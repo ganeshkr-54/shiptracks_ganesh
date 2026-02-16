@@ -1,0 +1,125 @@
+{{- define "base.inject" }}
+{{- $root := .root }}
+{{- $inject := .inject }}
+{{- $application := .application }}
+{{- if $inject }}
+{{- $injectPrefix := or (and $application (get ($application | default dict) "injectPrefix")) "" }}
+{{- $namePrefix := or (and $injectPrefix (printf "%s-" (tpl $injectPrefix $root))) "" }}
+{{- if $inject.secrets }}
+{{- range $name, $secret := $inject.secrets }}
+{{- if $secret }}
+---
+apiVersion: v1
+kind: Secret
+type: {{ $secret.type | default "Opaque" | quote }}
+metadata:
+  name: {{ printf "%s%s" $namePrefix $name | quote }}
+data:
+  {{- range $secretName, $secretValue := $secret.data }}
+  {{ $secretName }}: {{ $secretValue | toString | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $inject.sealedSecrets }}
+{{- range $name, $secret := $inject.sealedSecrets }}
+{{- if $secret }}
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: {{ printf "%s%s" $namePrefix $name | quote }}
+  annotations:
+    sealedsecrets.bitnami.com/cluster-wide: "true"
+spec:
+  template:
+    type: {{ $secret.type | default "Opaque" | quote }}
+  encryptedData:
+    {{- toYaml $secret.encryptedData | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $inject.secretsRaw }}
+{{- range $name, $secretRaw := $inject.secretsRaw }}
+{{- if $secretRaw }}
+---
+apiVersion: v1
+kind: Secret
+type: {{ $secretRaw.type | default "Opaque" | quote }}
+metadata:
+  name: {{ printf "%s%s" $namePrefix $name | quote }}
+data:
+  {{- range $secretName, $secretValue := $secretRaw.data }}
+  {{ $secretName }}: {{ $secretValue | toString | b64enc }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $inject.configMaps }}
+{{- range $name, $config := $inject.configMaps }}
+{{- if $config }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s%s" $namePrefix $name | quote }}
+data:
+  {{- toYaml $config | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $inject.files }}
+{{- range $name, $path := $inject.files }}
+{{- if $path }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s%s" $namePrefix $name | quote }}
+data:
+  {{- ($root.Files.Glob (printf "%s/*" $path)).AsConfig | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $inject.services }}
+{{- range $name, $service := $inject.services }}
+{{- if $service }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s%s" $namePrefix $name | quote }}
+  labels:
+    {{- toYaml $service.labels | nindent 4 }}
+spec:
+  {{- toYaml $service.spec | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $inject.persistentVolumeClaims }}
+{{- range $name, $persistentVolumeClaim := $inject.persistentVolumeClaims }}
+{{- if $persistentVolumeClaim }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ printf "%s%s" $namePrefix $name | quote }}
+spec:
+  {{- toYaml $persistentVolumeClaim.spec | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $inject.storageClasses }}
+{{- range $name, $storageClass := $inject.storageClasses }}
+{{- if $storageClass }}
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ printf "%s%s" $namePrefix $name | quote }}
+{{- toYaml $storageClass | nindent 0 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

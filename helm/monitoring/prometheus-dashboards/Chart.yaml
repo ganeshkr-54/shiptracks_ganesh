@@ -1,0 +1,8 @@
+name: prometheus-dashboards
+version: 0.0.0
+
+dependencies:
+  - name: base
+    import-values:
+      - child: base
+        parent: base

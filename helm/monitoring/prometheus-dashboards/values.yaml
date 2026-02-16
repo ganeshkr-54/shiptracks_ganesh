@@ -1,0 +1,107 @@
+name: prometheus
+injects:
+  - dashboards-base
+  - dashboards-elasticsearch
+  - dashboards-certificates
+  - dashboards-kafka
+  - dashboards-pipelines
+  - dashboards-ingress
+  - dashboards-blackbox
+  - dashboards-postgres
+  - dashboards-applications
+  - dashboards-redpanda-kafka
+  - dashboards-redpanda-core
+  - dashboards-other
+  - dashboards-new
+  - dashboards-logs
+  - dashboards-master
+
+dashboards-base:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-base: dashboards-base
+
+dashboards-elasticsearch:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-elasticsearch: dashboards-elasticsearch
+
+dashboards-certificates:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-certificates: dashboards-certificates
+
+dashboards-kafka:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-kafka: dashboards-kafka
+
+dashboards-ingress:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-ingress: dashboards-ingress
+
+dashboards-blackbox:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-blackbox: dashboards-blackbox
+
+dashboards-pipelines:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-pipelines: dashboards-pipelines
+
+dashboards-postgres:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-postgres: dashboards-postgres
+
+dashboards-applications:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-applications: dashboards-applications
+
+dashboards-other:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-other: dashboards-other
+
+dashboards-redpanda-kafka:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-redpanda-kafka: dashboards-redpanda-kafka
+
+dashboards-redpanda-core:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-redpanda-core: dashboards-redpanda-core
+
+dashboards-new:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-new: dashboards-new
+
+dashboards-logs:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-logs: dashboards-logs
+
+dashboards-master:
+  enabled: false
+  inject:
+    files:
+      prometheus-dashboards-master: dashboards-master

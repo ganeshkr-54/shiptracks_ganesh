@@ -1,0 +1,82 @@
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      externalUrl: https://minio-dev.oiigds.com/prometheus
+  alertmanager:
+    config:
+      route:
+        group_by: ["alertname"]
+        receiver: msteams-development-system
+        routes:
+          - receiver: msteams-development-critical
+            match_re:
+              alertname: ^(KubeNodeNotReady|KubePodCrashLooping|KubeDeploymentReplicasMismatch|KubeStatefulSetReplicasMismatch|KubeContainerWaiting|KubePersistentVolumeFillingUp)$
+          - receiver: msteams-development-critical
+            match:
+              route: certificates
+          - receiver: msteams-development-other
+            match:
+              route: main
+      receivers:
+        - name: "null"
+        - name: msteams-development-critical
+          webhook_configs:
+            - url: http://prometheus-msteams:2000/development-critical
+              send_resolved: true
+        - name: msteams-development-other
+          webhook_configs:
+            - url: http://prometheus-msteams:2000/development-other
+              send_resolved: true
+        - name: msteams-development-system
+          webhook_configs:
+            - url: http://prometheus-msteams:2000/development-system
+              send_resolved: true
+
+prometheus-msteams:
+  connectors:
+    # Alerts (Development, Critical)
+    - development-critical: https://oceaneering.webhook.office.com/webhookb2/0e0eb5ae-49a8-4aec-8d2f-03808ae5554a@97525e9a-595d-472c-8248-0dc58f852d61/IncomingWebhook/ac6e7d5fa31f4f11a5083cab61f463b9/7d507ba7-f224-4530-bdc2-c1bb36d2c32f
+    # Alerts (Development, Other)
+    - development-other: https://oceaneering.webhook.office.com/webhookb2/0e0eb5ae-49a8-4aec-8d2f-03808ae5554a@97525e9a-595d-472c-8248-0dc58f852d61/IncomingWebhook/9aedc978911c4b8796ecbfe604a8a2e9/7d507ba7-f224-4530-bdc2-c1bb36d2c32f
+    # Alerts (Development, System)
+    - development-system: https://oceaneering.webhook.office.com/webhookb2/0e0eb5ae-49a8-4aec-8d2f-03808ae5554a@97525e9a-595d-472c-8248-0dc58f852d61/IncomingWebhook/46d8d57aed5644a8945aa919c85cbe33/7d507ba7-f224-4530-bdc2-c1bb36d2c32f
+
+ingresses: ["prometheus", "prometheus-alertmanager"]
+
+prometheus:
+  tls: true
+  tlsSecretName: oiigds-certs
+  service: prometheus-prometheus
+  port: 9090
+  annotations:
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: prometheus-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: Restricted
+    # In Grafana we add the header: "X-Forwarded-For: 1.1.1.1" ("nginx-ingress" will use it as an client IP)
+    # "nonprod" Kubernetes cluster IP: 104.42.123.34
+    # "prod-us-east" Kubernetes cluster IP: 20.83.140.95
+    nginx.ingress.kubernetes.io/whitelist-source-range: 1.1.1.1/32,104.42.123.34/32,20.83.140.95/32
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/prometheus$ /prometheus/ permanent;
+  hosts:
+    - host: minio-dev.oiigds.com
+      paths:
+        - path: "/prometheus(/|$)(.*)"
+
+prometheus-alertmanager:
+  tls: true
+  tlsSecretName: oiigds-certs
+  service: prometheus-alertmanager
+  port: 9093
+  annotations:
+    # "nonprod" Kubernetes cluster IP: 104.42.123.34
+    # "prod-us-east" Kubernetes cluster IP: 20.83.140.95
+    nginx.ingress.kubernetes.io/whitelist-source-range: 104.42.123.34/32,20.83.140.95/32
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/alertmanager$ /alertmanager/ permanent;
+  hosts:
+    - host: minio-dev.oiigds.com
+      paths:
+        - path: "/alertmanager(/|$)(.*)"

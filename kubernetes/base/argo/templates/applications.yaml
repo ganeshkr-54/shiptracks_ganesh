@@ -1,0 +1,81 @@
+{{- define "argo.application" }}
+{{- $root := .root }}
+{{- $name := .name }}
+{{- $application := .application }}
+{{- if and $application (ne (printf "%t" (index ($application | default dict) "enabled")) "false") }}
+{{- if $application.helm }}
+{{- with .root.Values }}
+{{- $applicationName := printf "%s%s%s" (or (and .applicationsPrefix (printf "%s-" .applicationsPrefix)) "") $name (or (and .applicationsSuffix (printf "-%s" .applicationsSuffix)) "") }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ $applicationName | quote }}
+  namespace: {{ .argo.namespace | quote }}
+  {{- if $application.syncWave }}
+  annotations:
+    argocd.argoproj.io/sync-wave: {{ $application.syncWave | quote }}
+  {{- end }}
+  {{- if .argo.finalizers }}
+  finalizers:
+    {{- toYaml .argo.finalizers | nindent 4 }}
+  {{- end }}
+spec:
+  project: {{ $application.project | quote }}
+  source:
+    repoURL: {{ $application.helm.repository | quote }}
+    targetRevision: {{ $application.helm.version | default $application.helm.branch | quote }}
+    {{- if $application.helm.chart }}
+    chart: {{ $application.helm.chart | quote }}
+    {{- end }}
+    {{- if $application.helm.path }}
+    path: {{ $application.helm.path | quote }}
+    {{- end }}
+    {{- if $application.helm.directory }}
+    directory:
+      {{- toYaml $application.helm.directory | nindent 6 }}
+    {{- else }}
+    helm:
+      version: v3
+      releaseName: {{ $application.helm.release | default $applicationName | quote }}
+      {{- if $application.helm.valueFiles }}
+      valueFiles:
+        {{- toYaml $application.helm.valueFiles | nindent 8 }}
+      {{- end }}
+      {{- if $application.helm.values }}
+      values: |
+        {{- tpl (toYaml $application.helm.values | nindent 8) $root }}
+      {{- end }}
+      {{- if $application.helm.skipCrds }}
+      skipCrds: {{ $application.helm.skipCrds }}
+      {{- end }}
+    {{- end }}
+  destination:
+    name: {{ $application.destination | default .argo.destination.name | quote }}
+    namespace: {{ $application.namespace | quote }}
+  syncPolicy:
+    {{- toYaml (mergeOverwrite (deepCopy (.argo.syncPolicy | default dict)) ($application.syncPolicy | default dict)) | nindent 4 }}
+    {{- if $application.syncOptions }}
+    syncOptions:
+      {{- toYaml $application.syncOptions | nindent 6 }}
+    {{- end }}
+  {{- if $application.ignoreDifferences }}
+  ignoreDifferences:
+    {{- toYaml $application.ignoreDifferences | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "argo.applications" }}
+{{- $root := . }}
+{{- with .Values }}
+{{- if .applications }}
+{{- range $name, $application := .applications }}
+{{- include "argo.application" (dict "root" $root "name" $name "application" $application) }}
+{{- include "argo.application.inject" (dict "root" $root "name" $name "application" $application) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

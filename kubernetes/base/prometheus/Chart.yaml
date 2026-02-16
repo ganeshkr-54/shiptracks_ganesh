@@ -1,0 +1,8 @@
+name: prometheus-stack
+version: 0.0.0
+
+dependencies:
+  - name: argo
+    import-values:
+      - child: argo
+        parent: argo

@@ -1,0 +1,31 @@
+{{- define "argo.projects" }}
+{{- with .Values }}
+{{- $argo := .argo }}
+{{- if .projects }}
+{{- range $name, $project := .projects }}
+{{- if and $project (ne (printf "%t" (index ($project | default dict) "enabled")) "false") }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ $name | quote }}
+  namespace: {{ $argo.namespace | quote }}
+spec:
+  clusterResourceWhitelist:
+    {{- toYaml $project.resourceWhitelist | nindent 4 }}
+  destinations:
+    - name: {{ $argo.destination.name | quote }}
+      namespace: {{ $argo.namespace | quote }}
+    {{- if and $project.destination (get ($project.destination | default dict) "namespaces") }}
+    {{- range $project.destination.namespaces }}
+    - name: {{ get ($project.destination | default dict) "name" | default $argo.destination.name | quote }}
+      namespace: {{ . | quote }}
+    {{- end }}
+    {{- end }}
+  sourceRepos:
+    {{- toYaml ($project.sourceRepos | default $argo.sourceRepos) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

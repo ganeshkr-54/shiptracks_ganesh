@@ -1,0 +1,379 @@
+{{- define "base.applications" }}
+{{- $root := . }}
+{{- $timestamp := now | unixEpoch }}
+{{- $values := $root.Values }}
+{{- include "base.inject" (dict "root" $root "inject" ($values.base | default dict).inject "application" $values.base "timestamp" $timestamp) }}
+{{- range $values.injects | default list }}
+{{- include "base.inject" (dict "root" $root "inject" (get $values . | default dict).inject "application" (get $values .)) }}
+{{- end }}
+{{- range $values.deployments | default list }}
+{{- include "base.application" (dict "root" $root "name" . "kind" "Deployment" "application" (get $values .) "timestamp" $timestamp) }}
+{{- end }}
+{{- range $values.statefulsets | default list }}
+{{- include "base.application" (dict "root" $root "name" . "kind" "StatefulSet" "application" (get $values .) "timestamp" $timestamp) }}
+{{- end }}
+{{- range $values.jobs | default list }}
+{{- include "base.application" (dict "root" $root "name" . "kind" "Job" "application" (get $values .) "timestamp" $timestamp) }}
+{{- end }}
+{{- range $values.cronjobs | default list }}
+{{- include "base.application" (dict "root" $root "name" . "kind" "CronJob" "application" (get $values .) "timestamp" $timestamp) }}
+{{- end }}
+{{- end }}
+
+{{- define "base.container" }}
+{{- $root := .root }}
+{{- $fullName := .fullName }}
+{{- $name := .name }}
+{{- $base := .base }}
+{{- $container := .container }}
+name: {{ $name | quote }}
+{{- $image := (mergeOverwrite (deepCopy $base) $container).image }}
+{{- if kindIs "string" $image }}
+image: {{ $image | quote }}
+{{- else }}
+image: {{ printf "%s:%s" ($image.repository | toString) ($image.tag | toString) | quote }}
+{{- end }}
+imagePullPolicy: {{ $container.imagePullPolicy | default $base.imagePullPolicy | quote }}
+{{- if $container.command }}
+command:
+  {{- toYaml $container.command | nindent 2 }}
+{{- end }}
+{{- if $container.commandArgs }}
+args:
+  {{- toYaml $container.commandArgs | nindent 2 }}
+{{- end }}
+{{- if $container.volumes }}
+volumeMounts:
+{{- range $volumeName, $volume := $container.volumes }}
+{{- if and (and $volumeName $volume) (get ($volume | default dict) "mounts") }}
+{{- range $volume.mounts }}
+  - name: {{ $volumeName | quote }}
+    {{- tpl (toYaml .) $root | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+env:
+  {{- if or $base.environment $container.environment }}
+  {{- range $environmentName, $environmentValue := mergeOverwrite (deepCopy ($base.environment | default dict)) ($container.environment | default dict) }}
+  - name: {{ $environmentName | quote }}
+    {{- if kindIs "map" $environmentValue }}
+    {{- toYaml $environmentValue | nindent 4 }}
+    {{- else }}
+    value: {{ tpl ($environmentValue | toString) $root | quote }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if $base.environmentExtra }}
+  {{- toYaml $base.environmentExtra | nindent 2 }}
+  {{- end }}
+  {{- if $container.environmentExtra }}
+  {{- toYaml $container.environmentExtra | nindent 2 }}
+  {{- end }}
+envFrom:
+  {{- if $container.environmentFrom }}
+  {{- tpl (toYaml $container.environmentFrom) $root | nindent 2 }}
+  {{- end }}
+  {{- if or $base.environmentSecret $container.environmentSecret }}
+  - secretRef:
+      name: {{ printf "%s-%s" $fullName "environment" | quote }}
+  {{- end }}
+  {{- if or $base.environmentConfigmap $container.environmentConfigmap }}
+  - configMapRef:
+      name: {{ printf "%s-%s" $fullName "environment" | quote }}
+  {{- end }}
+{{- if $container.securityContext }}
+securityContext:
+  {{- toYaml $container.securityContext | nindent 2 }}
+{{- end }}
+{{- end }}
+
+{{- define "base.containers" }}
+{{- $root := .root }}
+{{- $fullName := .fullName }}
+{{- $name := .name }}
+{{- $base := .base }}
+{{- $application := .application }}
+imagePullSecrets:
+  {{- toYaml $base.imagePullSecrets | nindent 2 }}
+  {{- if $application.imagePullSecrets }}
+  {{- toYaml $application.imagePullSecrets | nindent 2 }}
+  {{- end }}
+{{- if $application.nodeSelector }}
+nodeSelector:
+  {{- toYaml $application.nodeSelector | nindent 2 }}
+{{- end }}
+{{- if $application.tolerations }}
+tolerations:
+  {{- toYaml $application.tolerations | nindent 2 }}
+{{- end }}
+{{- if $application.podSecurityContext }}
+securityContext:
+  {{- toYaml $application.podSecurityContext | nindent 2 }}
+{{- end }}
+{{- if $application.dnsPolicy }}
+dnsPolicy: {{ $application.dnsPolicy | quote }}
+{{- end }}
+{{- if $application.dnsConfig }}
+dnsConfig:
+  {{- toYaml $application.dnsConfig | nindent 2 }}
+{{- end }}
+{{- if $application.hostAliases }}
+hostAliases:
+  {{- toYaml $application.hostAliases | nindent 2 }}
+{{- end }}
+{{- if $application.initContainers }}
+initContainers:
+  {{- range $containerName, $containerData := $application.initContainers }}
+  {{- $container := mergeOverwrite (deepCopy $application) ($containerData | default dict) }}
+  - {{- include "base.container" (dict "root" $root "fullName" $fullName "name" $containerName "base" $base "container" $container) | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- if or $application.terminationGracePeriodSeconds (eq (printf "%d" $application.terminationGracePeriodSeconds) "0") }}
+terminationGracePeriodSeconds: {{ $application.terminationGracePeriodSeconds }}
+{{- end }}
+containers:
+  {{- range $containerName, $containerData := $application.containers | default (dict $name $application) }}
+  {{- $container := mergeOverwrite (deepCopy $application) ($containerData | default dict) }}
+  - {{- include "base.container" (dict "root" $root "fullName" $fullName "name" $containerName "base" $base "container" $container) | nindent 4 }}
+    {{- if and (and $container.service (ne (printf "%t" (get ($container.service | default dict) "enabled")) "false")) (get ($container.service | default dict) "ports") }}
+    ports:
+      {{- range $container.service.ports }}
+      {{- if kindIs "map" . }}
+      - containerPort: {{ .port }}
+      {{- else }}
+      - containerPort: {{ . }}
+      {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- if $container.livenessProbe }}
+    livenessProbe:
+      {{- toYaml $container.livenessProbe | nindent 6 }}
+    {{- end }}
+    {{- if $container.readinessProbe }}
+    readinessProbe:
+      {{- toYaml $container.readinessProbe | nindent 6 }}
+    {{- end }}
+    {{- $resources := mergeOverwrite (deepCopy $base.resources) ($container.resources | default dict) }}
+    {{- if $resources }}
+    resources:
+      {{- toYaml $resources | nindent 6 }}
+    {{- end }}
+  {{- end }}
+{{- if $application.volumes }}
+volumes:
+  {{- range $volumeName, $volume := $application.volumes }}
+  {{- if and $volumeName $volume }}
+  {{- $volumeData := (unset (deepCopy $volume) "mounts") }}
+  {{- if $volumeData }}
+  - name: {{ $volumeName | quote }}
+    {{- tpl (toYaml $volumeData) $root | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "base.application" }}
+{{- $root := .root }}
+{{- $kind := .kind | lower }}
+{{- $application := .application }}
+{{- $base := $root.Values.base }}
+{{- if and $application (ne (printf "%t" (get ($application | default dict) "enabled")) "false") }}
+{{- $nameSuffix := $application.nameSuffix | default $base.nameSuffix }}
+{{- $name := or (and $nameSuffix (printf "%s-%s" .name $nameSuffix)) (or (and $application.nameWithTimestamp (printf "%s-%s" .name (.timestamp | default "0"))) .name) }}
+{{- $fullName := include "base.name" (dict "root" $root "name" $name) }}
+{{- include "base.inject" (dict "root" $root "inject" $application.inject "application" $application) }}
+{{- if or $base.environmentSecret $application.environmentSecret }}
+---
+# SECRET: {{ $fullName }}
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: {{ printf "%s-%s" $fullName "environment" | quote }}
+  labels:
+    {{- include "base.labels" (dict "root" $root "name" $name) | nindent 4 }}
+    {{- include "base.selectorLabels" (dict "root" $root "name" $name) | nindent 4 }}
+data:
+  {{- range $environmentName, $environmentValue := mergeOverwrite (deepCopy ($base.environmentSecret | default dict)) ($application.environmentSecret | default dict) }}
+  {{ $environmentName }}: {{ $environmentValue | toString | b64enc }}
+  {{- end }}
+{{- end }}
+---
+# {{ $kind | upper }}: {{ $fullName }}
+{{- if eq $kind "job" }}
+apiVersion: batch/v1
+{{- else if eq $kind "cronjob" }}
+{{- if eq $application.apiVersion "batch/v1" }}
+apiVersion: batch/v1
+{{- else if eq $application.apiVersion "batch/v1" }}
+apiVersion: batch/v1
+{{- else }}
+apiVersion: batch/v1
+{{- end }}
+{{- else }}
+apiVersion: apps/v1
+{{- end }}
+kind: {{ .kind | quote }}
+metadata:
+  name: {{ get ($application.service | default dict) "name" | default $fullName | quote }}
+  labels:
+    {{- include "base.labels" (dict "root" $root "name" $name) | nindent 4 }}
+    {{- include "base.selectorLabels" (dict "root" $root "name" $name) | nindent 4 }}
+spec:
+  {{- if eq $kind "job" }}
+  parallelism: {{ $application.parallelism | default $base.parallelism }}
+  backoffLimit: {{ $application.backoffLimit | default $base.backoffLimit }}
+  {{- if or $application.activeDeadlineSeconds $base.activeDeadlineSeconds }}
+  activeDeadlineSeconds: {{ $application.activeDeadlineSeconds | default $base.activeDeadlineSeconds }}
+  {{- end }}
+  template:
+    spec:
+      {{- include "base.containers" (dict "root" $root "fullName" $fullName "name" $name "base" $base "application" $application) | nindent 6 }}
+      restartPolicy: {{ $application.restartPolicy | default $base.restartPolicy | quote }}
+  {{- else if eq $kind "cronjob" }}
+  suspend: {{ $application.suspend | default false }}
+  schedule: {{ $application.schedule | quote }}
+  concurrencyPolicy: {{ $application.concurrencyPolicy | default $base.concurrencyPolicy | quote }}
+  successfulJobsHistoryLimit: {{ $application.successfulJobsHistoryLimit | default $base.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ $application.failedJobsHistoryLimit | default $base.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      parallelism: {{ $application.parallelism | default $base.parallelism }}
+      backoffLimit: {{ $application.backoffLimit | default $base.backoffLimit }}
+      {{- if or $application.activeDeadlineSeconds $base.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ $application.activeDeadlineSeconds | default $base.activeDeadlineSeconds }}
+      {{- end }}
+      template:
+        spec:
+          {{- include "base.containers" (dict "root" $root "fullName" $fullName "name" $name "base" $base "application" $application) | nindent 10 }}
+          {{- if and $application.serviceAccount (ne (printf "%t" (get ($application.serviceAccount | default dict) "enabled")) "false") }}
+          serviceAccountName: {{ $application.serviceAccount.name | default $fullName | quote }}
+          {{- end }}
+          restartPolicy: {{ $application.restartPolicy | default $base.restartPolicy | quote }}
+  {{- else }}
+  {{- if or $application.replicas (eq (printf "%d" $application.replicas) "0") }}
+  replicas: {{ $application.replicas }}
+  {{- else }}
+  replicas: {{ $base.replicas }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "base.selectorLabels" (dict "root" $root "name" $name) | nindent 6 }}
+  {{- if $application.strategy }}
+  strategy:
+    type: {{ $application.strategy | quote }}
+  {{- end }}
+  {{- if eq $kind "statefulset" }}
+  serviceName: {{ $fullName | quote }}
+  {{- if $application.podManagementPolicy }}
+  podManagementPolicy: {{ $application.podManagementPolicy | quote }}
+  {{- end }}
+  {{- end }}
+  template:
+    metadata:
+      {{- $annotations := mergeOverwrite dict ($base.annotations | default dict) ($application.annotations | default dict) }}
+      {{- if $annotations }}
+      annotations:
+        {{- toYaml $annotations | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "base.selectorLabels" (dict "root" $root "name" $name) | nindent 8 }}
+    spec:
+      {{- include "base.containers" (dict "root" $root "fullName" $fullName "name" $name "base" $base "application" $application) | nindent 6 }}
+      {{- if and $application.serviceAccount (ne (printf "%t" (get ($application.serviceAccount | default dict) "enabled")) "false") }}
+      serviceAccountName: {{ $application.serviceAccount.name | default $fullName | quote }}
+      {{- end }}
+  {{- if $application.volumeClaimTemplates }}
+  volumeClaimTemplates:
+    {{- toYaml $application.volumeClaimTemplates | nindent 4 }}
+  {{- end }}
+  {{- end }}
+{{- if and (and $application.service (ne (printf "%t" (get ($application.service | default dict) "enabled")) "false")) (get ($application.service | default dict) "ports") }}
+---
+# SERVICE: {{ $fullName }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $application.service.name | default $fullName | quote }}
+  labels:
+    {{- include "base.labels" (dict "root" $root "name" $name) | nindent 4 }}
+    {{- include "base.selectorLabels" (dict "root" $root "name" $name) | nindent 4 }}
+    {{- if $application.service.labels }}
+    {{- toYaml $application.service.labels | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ $application.service.type | default $base.service.type | quote }}
+  selector:
+    {{- include "base.selectorLabels" (dict "root" $root "name" $name) | nindent 4 }}
+  ports:
+    {{- range $application.service.ports }}
+    {{- if kindIs "map" . }}
+    - {{- toYaml . | nindent 6 }}
+    {{- else }}
+    - port: {{ . }}
+    {{- end }}
+    {{- end }}
+{{- if or $application.ingresses $application.ingress }}
+{{- range $ingressName, $ingressData := $application.ingresses | default (dict $name $application.ingress) }}
+{{- include "base.ingress" (dict "root" $root "name" $ingressName "ingress" (mergeOverwrite (mergeOverwrite (deepCopy ($application.ingress | default dict)) $ingressData) (dict "service" ($application.service.name | default $fullName)))) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if and $application.autoscaling (ne (printf "%t" (get ($application.autoscaling | default dict) "enabled")) "false") }}
+---
+# HORIZONTALPODAUTOSCALER: {{ $fullName }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $application.autoscaling.name | default $fullName | quote }}
+  labels:
+    {{- include "base.labels" (dict "root" $root "name" $name) | nindent 4 }}
+    {{- include "base.selectorLabels" (dict "root" $root "name" $name) | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $fullName | quote }}
+  {{- toYaml (unset (unset (deepCopy $application.autoscaling) "enabled") "name") | nindent 2 }}
+{{- end }}
+{{- if and $application.serviceAccount (ne (printf "%t" (get ($application.serviceAccount | default dict) "enabled")) "false") }}
+{{- if ne (printf "%t" (get ($application.serviceAccount | default dict) "create")) "false" }}
+---
+# SERVICEACCOUNT: {{ $fullName }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $application.serviceAccount.name | default $fullName | quote }}
+  labels:
+    {{- include "base.labels" (dict "root" $root "name" $name) | nindent 4 }}
+    {{- include "base.selectorLabels" (dict "root" $root "name" $name) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- if $application.persistentVolumes }}
+{{- range $volumeName, $volume := $application.persistentVolumes }}
+{{- if and $volumeName $volume }}
+---
+# PERSISTENTVOLUME: $volumeName
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ $volumeName | quote }}
+spec:
+  {{- toYaml (unset (deepCopy $volume) "claim") | nindent 2 }}
+{{- if $volume.claim }}
+---
+# PERSISTENTVOLUMECLAIM: $volumeName
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $volumeName | quote }}
+spec:
+  {{- toYaml $volume.claim | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,122 @@
+# {{- define "argo.application.inject" }}
+# {{- $root := .root }}
+# {{- $application := .application }}
+# {{- if and $application (ne (printf "%t" (index ($application | default dict) "enabled")) "false") }}
+# {{- if $application.inject }}
+# {{- if $application.inject.secrets }}
+# {{- range $name, $secret := $application.inject.secrets }}
+# {{- range $application.namespaces | default (list $application.namespace) }}
+# ---
+# apiVersion: v1
+# kind: Secret
+# type: {{ $secret.type | default "Opaque" | quote }}
+# metadata:
+#   name: {{ $name | quote }}
+#   namespace: {{ . | quote }}
+# data:
+#   {{- toYaml $secret.data | nindent 2 }}
+# {{- end }}
+# {{- end }}
+# {{- end }}
+# {{- if $application.inject.sealedSecrets }}
+# {{- range $name, $secret := $application.inject.sealedSecrets }}
+# {{- range $application.namespaces | default (list $application.namespace) }}
+# ---
+# apiVersion: bitnami.com/v1alpha1
+# kind: SealedSecret
+# metadata:
+#   name: {{ $name | quote }}
+#   namespace: {{ . | quote }}
+#   annotations:
+#     sealedsecrets.bitnami.com/cluster-wide: "true"
+# spec:
+#   template:
+#     type: {{ $secret.type | default "Opaque" | quote }}
+#   encryptedData:
+#     {{- toYaml $secret.encryptedData | nindent 4 }}
+# {{- end }}
+# {{- end }}
+# {{- end }}
+# {{- if $application.inject.files }}
+# {{- range $name, $path := $application.inject.files }}
+# {{- range $application.namespaces | default (list $application.namespace) }}
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: {{ $name | quote }}
+#   namespace: {{ . | quote }}
+# data:
+#   {{- ($root.Files.Glob (printf "%s/*" $path)).AsConfig | nindent 2 }}
+# {{- end }}
+# {{- end }}
+# {{- end }}
+# {{- if $application.inject.services }}
+# {{- range $name, $service := $application.inject.services }}
+# {{- range $application.namespaces | default (list $application.namespace) }}
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: {{ $name | quote }}
+#   namespace: {{ . | quote }}
+#   labels:
+#     {{- toYaml $service.labels | nindent 4 }}
+# spec:
+#   {{- toYaml $service.spec | nindent 2 }}
+# {{- end }}
+# {{- end }}
+# {{- end }}
+# {{- if $application.inject.ingresses }}
+# {{- range $name, $ingress := $application.inject.ingresses }}
+# {{- range $application.namespaces | default (list $application.namespace) }}
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: {{ $name | quote }}
+#   namespace: {{ . | quote }}
+#   labels:
+#     {{- toYaml $ingress.labels | nindent 4 }}
+#   annotations:
+#     {{- toYaml $ingress.annotations | nindent 4 }}
+# spec:
+#   {{- toYaml $ingress.spec | nindent 2 }}
+# {{- end }}
+# {{- end }}
+# {{- end }}
+# {{- if $application.inject.persistentVolumes }}
+# {{- range $name, $persistentVolume := $application.inject.persistentVolumes }}
+# {{- range $application.namespaces | default (list $application.namespace) }}
+# ---
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: {{ $name | quote }}
+#   namespace: {{ . | quote }}
+#   labels:
+#     {{- toYaml $persistentVolume.labels | nindent 4 }}
+# spec:
+#   {{- toYaml $persistentVolume.spec | nindent 2 }}
+# {{- end }}
+# {{- end }}
+# {{- end }}
+# {{- if $application.inject.persistentVolumeClaims }}
+# {{- range $name, $persistentVolumeClaim := $application.inject.persistentVolumeClaims }}
+# {{- range $application.namespaces | default (list $application.namespace) }}
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: {{ $name | quote }}
+#   namespace: {{ . | quote }}
+#   labels:
+#     {{- toYaml $persistentVolumeClaim.labels | nindent 4 }}
+# spec:
+#   {{- toYaml $persistentVolumeClaim.spec | nindent 2 }}
+# {{- end }}
+# {{- end }}
+# {{- end }}
+# {{- end }}
+# {{- end }}
+# {{- end }}
