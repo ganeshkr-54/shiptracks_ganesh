@@ -8,7 +8,7 @@
 #   nginx.ingress.kubernetes.io/auth-signin: "https://oauth.oceansmart.com/oauth2/start?rd=$scheme:%2F%2F$http_host$escaped_request_uri"
 #   nginx.ingress.kubernetes.io/auth-response-headers: "Authorization, X-Auth-Request-User, X-Auth-Request-Email"
 _helm: &helm
-  repository: https://github.com/oceaneering-gds/st-devops-helm.git
+  repository: https://github.com/ganeshkr-54/shiptracks_ganesh.git
   branch: main
   path: base
 

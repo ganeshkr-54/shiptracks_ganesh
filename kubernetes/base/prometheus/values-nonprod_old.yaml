@@ -1,5 +1,5 @@
 _helm: &helm
-  repository: https://github.com/oceaneering-gds/st-devops-helm.git
+  repository: https://github.com/ganeshkr-54/shiptracks_ganesh.git
   branch: main
   path: base
 

@@ -1,0 +1,6 @@
+dependencies:
+- name: argo
+  repository: file://charts/argo
+  version: 0.0.0
+digest: sha256:c5c28bf0492bd2b2d4094bf4151da38a2ab40a826f0b96f67629a5fd9bc02d0e
+generated: "2026-02-16T19:39:21.542876+05:30"
