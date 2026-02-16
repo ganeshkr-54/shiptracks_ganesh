@@ -1,20 +1,26 @@
 _helm: &helm
-  repository: https://github.com/shiptracks/devops.git
-  branch: dev
+  repository: https://github.com/ganeshkr-54/shiptracks_ganesh.git
+  branch: main
   path: helm/monitoring/prometheus
 
-applications:
-  grafana:
-    service:
-      type: NodePort
+projects:
+  monitoring:
+    resourceWhitelist:
+      - group: "*"
+        kind: "*"
+    destination:
+      namespaces:
+        - monitoring
 
-  prometheus:
-    prometheusSpec:
-      retention: 2d
-      storageSpec:
-        volumeClaimTemplate:
-          spec:
-            storageClassName: standard
+applications:
+  prometheus-stack:
+    project: monitoring
+    namespace: monitoring
+    helm:
+      <<: *helm
+      valueFiles:
+        - values.yaml
+
 
   # prometheus-dashboards:
   #   enabled: true
