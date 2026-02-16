@@ -17,7 +17,9 @@ applications:
     project: monitoring
     namespace: monitoring
     helm:
-      <<: *helm
+      repository: https://github.com/ganeshkr-54/shiptracks_ganesh.git
+      branch: main
+      path: helm/monitoring/prometheus
       valueFiles:
         - values.yaml
 
