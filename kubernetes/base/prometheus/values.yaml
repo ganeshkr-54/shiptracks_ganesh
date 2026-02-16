@@ -1,831 +1,831 @@
-_helm: &helm
-  repository: https://github.com/ganeshkr-54/shiptracks_ganesh.git
-  branch: main
-  path: base
+# _helm: &helm
+#   repository: https://github.com/ganeshkr-54/shiptracks_ganesh.git
+#   branch: main
+#   path: base
 
-applications:
-  metrics-cert-exporter:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-certificate-exporter
+# applications:
+#   metrics-cert-exporter:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-certificate-exporter
 
-  metrics-kafka-2db3e83f:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-kafka
-      valueFiles:
-        - values-kafka-2db3e83f.yaml
+#   metrics-kafka-2db3e83f:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-kafka
+#       valueFiles:
+#         - values-kafka-2db3e83f.yaml
 
-  metrics-kafka-2db3e83f-prod:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-kafka
-      valueFiles:
-        - values-kafka-2db3e83f-prod.yaml
+#   metrics-kafka-2db3e83f-prod:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-kafka
+#       valueFiles:
+#         - values-kafka-2db3e83f-prod.yaml
 
-  metrics-kafka-395ceaaa-dev:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-kafka
-      valueFiles:
-        - values-kafka-395ceaaa-dev.yaml
+#   metrics-kafka-395ceaaa-dev:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-kafka
+#       valueFiles:
+#         - values-kafka-395ceaaa-dev.yaml
 
-  metrics-sql-pipelines:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-sql
-      valueFiles:
-        - values-pipelines-base.yaml
-        - values-pipelines-production.yaml
+#   metrics-sql-pipelines:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-sql
+#       valueFiles:
+#         - values-pipelines-base.yaml
+#         - values-pipelines-production.yaml
 
-  metrics-timescale-pipelines-dev:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-timescale
-      valueFiles:
-        - values-timescale-pipeline-nonprod.yaml
+#   metrics-timescale-pipelines-dev:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-timescale
+#       valueFiles:
+#         - values-timescale-pipeline-nonprod.yaml
 
-  metrics-sql-pipelines-dev:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-sql
-      valueFiles:
-        - values-pipelines-base.yaml
-        - values-pipelines-development-new.yaml
+#   metrics-sql-pipelines-dev:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-sql
+#       valueFiles:
+#         - values-pipelines-base.yaml
+#         - values-pipelines-development-new.yaml
 
-  metrics-sql-other:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-sql
-      valueFiles:
-        - values-other.yaml
+#   metrics-sql-other:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-sql
+#       valueFiles:
+#         - values-other.yaml
 
-  metrics-postgres-master:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-postgres
-      valueFiles:
-        - values-prod-master.yaml
+#   metrics-postgres-master:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-postgres
+#       valueFiles:
+#         - values-prod-master.yaml
 
-  metrics-postgres-master-dev:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-postgres
-      valueFiles:
-        - values-nonprod-master.yaml
+#   metrics-postgres-master-dev:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-postgres
+#       valueFiles:
+#         - values-nonprod-master.yaml
 
-  metrics-postgres-masteretl:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-postgres
-      valueFiles:
-        - values-prod-master-copy-etl.yaml
+#   metrics-postgres-masteretl:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-postgres
+#       valueFiles:
+#         - values-prod-master-copy-etl.yaml
 
-  metrics-postgres-pipeline:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-postgres
-      valueFiles:
-        - values-prod-pipeline.yaml
+#   metrics-postgres-pipeline:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-postgres
+#       valueFiles:
+#         - values-prod-pipeline.yaml
 
-  metrics-postgres-pipeline-dev:
-    enabled: false
-    project: monitoring
-    namespace: metrics
-    helm:
-      <<: *helm
-      path: monitoring/metrics-postgres
-      valueFiles:
-        - values-nonprod-pipeline.yaml
+#   metrics-postgres-pipeline-dev:
+#     enabled: false
+#     project: monitoring
+#     namespace: metrics
+#     helm:
+#       <<: *helm
+#       path: monitoring/metrics-postgres
+#       valueFiles:
+#         - values-nonprod-pipeline.yaml
 
-  metrics-blackbox-exporter:
-    enabled: false
-    project: monitoring
-    namespace: monitoring
-    helm:
-      repository: https://prometheus-community.github.io/helm-charts
-      chart: prometheus-blackbox-exporter
-      version: 7.7.0
-      values:
-        fullnameOverride: prometheus-blackbox-exporter
-        config:
-          modules:
-            http_2xx:
-              prober: http
-              timeout: 30s
-              http:
-                valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
-                preferred_ip_protocol: "ip4"
-                follow_redirects: true
-            http_2xx_json:
-              prober: http
-              timeout: 30s
-              http:
-                valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
-                preferred_ip_protocol: "ip4"
-                follow_redirects: true
-                headers:
-                  Content-Type: application/json
-        serviceMonitor:
-          enabled: true
-          defaults:
-            module: http_2xx
-            interval: 60s
-          targets: []
+#   metrics-blackbox-exporter:
+#     enabled: false
+#     project: monitoring
+#     namespace: monitoring
+#     helm:
+#       repository: https://prometheus-community.github.io/helm-charts
+#       chart: prometheus-blackbox-exporter
+#       version: 7.7.0
+#       values:
+#         fullnameOverride: prometheus-blackbox-exporter
+#         config:
+#           modules:
+#             http_2xx:
+#               prober: http
+#               timeout: 30s
+#               http:
+#                 valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+#                 preferred_ip_protocol: "ip4"
+#                 follow_redirects: true
+#             http_2xx_json:
+#               prober: http
+#               timeout: 30s
+#               http:
+#                 valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+#                 preferred_ip_protocol: "ip4"
+#                 follow_redirects: true
+#                 headers:
+#                   Content-Type: application/json
+#         serviceMonitor:
+#           enabled: true
+#           defaults:
+#             module: http_2xx
+#             interval: 60s
+#           targets: []
 
-  prometheus-secrets:
-    project: monitoring
-    namespace: monitoring
-    helm:
-      <<: *helm
-      values:
-        base:
-          inject:
-            sealedSecrets:
-              prometheus-grafana-admin:
-                encryptedData:
-                  admin-password: AgARosdUD9AR74ZR7KTjEyJ3+QL0cFoNodQiX1bL12rcturBJoVLLDckMQs4a1bAf+IV0LjaTwBmvgNyFNPWaAPq55c/LhEPIaAul6d+mu/JCrSwElNFiorIAQgmmoN7+DsTw0kCbG1NjGPG+CqSWkL+02YczUNpAZc+Ry3j3Ep3dbch+b4rFOmRmRofNutP/9Ar2jE24X0nc0pFk1YfIzq+K3358PNeiOv+AMUJEDsZFkS00lbLwo1yb8DjL4tmLDrLU6Rv4H9KZC9wv83gyBXr/Dl8lr8pJrZM6iHLijbY0Qxi6d3H3vbPLrS4/N8yAFx8UuwF7tkspJJ4zNTwNQ20vyYUACIGmv3wMSOWhXzL30uGWYTZWhH0rbMLfPc0YsR51vMF3sL/En2btntxTUyRjvHAGCPAJUaMmsR5nFSKRx2Y/aAfSiZxeDVIBLGssn/Qb6pb9wGLfejLGctAfNp4et+H1EPH37w8MdNIwwlAfLJbbSOWvKpCVmuxPW8DIhLdr+GvaTRrm70IPwihVgtpXNFHOG81K54+pRUzdahzVTrntF35LHfWmQnANHupnrqt/WuQ0FXjKfWPAwVvuU54Tecp+G/u3CNbNTcfBgBi857qLYp2dY9KwUzeMwrfJsLLwmR2D7mdf2ctFUaUkfQNkW4j1IE8bj05wWKZplXndpYlm+dKill3FcNXbDjLCQOhNVycoWDKZ3w2xjIBGfhG
-                  admin-user: AgCS7Q1Kn8ZrvbVDkTVNOoRtd0jL094YQ3TN6em+8tOoRRGByxX5PpOJc9+srr/GMNZHFmyxJo+KVfEnRF3xPeybKgq6oGPJqh05rmT8tHjGnzmx5QK/gDE+EM49Wq65dby6EhvKJmH0u/OYyUm2BP9gQ7cfJQQ60XZkBlWhdraODWNyGu8keVeA/bs+dIHA1yhx28q7/foIQluR76edCEhnGYudpzEwFj5QRsyj+nHZP8sHucOdFZFxL1RVpJ9KVFblQW5TwYlD0geJwf08QXWJqUek9QFIR0nhhczH+rGk3h9Sb4SiJXS5oB/XYSx2tn9oq5No4QMDEEAT3yxKrvSr1vrFaTLE/VpIy4dxNb9BWuYjcqjxjIA1iHj2LViEcJL87Hl2IpG2XFwx26QdPsEuhT+VX6+FS/hcOZAEuHlPMVR9PRb3gX1X0zHgTOt36wV+zz4qmmqO1c9BLshEQIwRUbWmpAaWtyOAnuDY8hDAr3nXIc+ufxY5sTfmvpq1Cy1OyYuI23i822rqem+osWBNgTpAzs2KVCUJ381Udl6RRuDxk9kojGcKdF8NMumRsSfyfYocNhRK+4Dk43bRrhMPoZepzeklPtM8DuWnkJdP1g2yP2ecfIZxSH0p7Au2+q6AgdP4UuRAgIOgjFuJ8UJfDi1DmxVe3aMUMXVO8dyjZ/ZH+jd4LsFgTVFPS12nQh8ndewOJA==
-              prometheus-grafana-credentials:
-                encryptedData:
-                  PROD_PROMETHEUS_BASIC_AUTH_PASSWORD: AgBRYMnPi1Ql5A0vr3pgihFJOnduVsyno+4Lnyd41qLCEDYtjyR7T2BPQs/ZwQf/RSHvI4E1bdOGHAqUjSKp58hm4qg+XjoOdqhS082A9cEv+qAvbAWqQuuSWxL3Kl+pMZ/vSai5Tuk0Gw1b4WaWcJQlOBe5UIYi4aBZ0yufNh0GGaYhccd7uVCE8czDD5bn5YRU/ofnLIKbikEXixwNGtDeBG+2kZVcNVC1r6qGnyRFn5NmyTVUIQzFwTK/tT+aV6iImaOXnYSRg/0dmbY8Spp5+5BDsyOgCevJFijpxa81U4rTdczT60YYSpGGP9kOVwow39WFyJj7tNRohsXDHOVqH+UMT9SWDWL2Z0wEB/n+7AG7TrkSom3eqiCHxNyp6DVc/e3RvMAEI4tCEM3BqHCtG0jMGSj5AklhoBHQ4IKTC+Vy3oHfPbGHOAfPYMG0oN9qTHUUPJoTLXNAQ3tQHugG1lBw7YhCSNL/tziYYPoZqCLD9eYc5DdbNBW+wCKpvagptTx1hKP5lPynb/2xxxbXGhexKn/temXeU0KAllka5u9ORqhuxYHG31qI7WSXCS+pu9eI4JuNrGn3v9y6bbZBDm4jM6wvT1oA6U/wXaQ0JBl3jJx+wbl0KzNAjKreaI+dUq72AWheWnyPuCqMorSkDqxE7f4QMdQwMmsJsjEVkNuOyOt1vlfyKb3DuN/FDk6ZNnmmqv8VaA0BGuOC7JSm
-                  PROD_PROMETHEUS_BASIC_AUTH_USER: AgBnRSfZj6OJOgpOM27/Hk5iokGAomlPEayMBxndhaacJJiV1jE4HwjiB/2z/reXgGICjsgtiG/zX2DcvUC8qzJp2jrbBzTxmvzcsoV69O3UIGyI8EnOytXVkwvYbStihA02ctloS0csyWc63XL+SNi3sg7CsTqwh/Rq03k/qr0xZy8v2NvUYtDX+VDXNxUmC/ABRfXmdJF+6sgHPE6AfKyjkLAOQAOXlf981K6Ds6DP8yGF36s87aieZUTqRJaHT1GBuCU3cCFXkq1t2E2lm3mOHRc8+oMMaloz4ZKLozqiUEvupo2G1b9njgOdwEX9BfPCHt9bVpdLdBQpe7//mFyLMNT+KoIpMbZFsSzmjabUlukvasIFwD9s+Q9LePaUxyK5Gfr1E/rMC1xRoUE1kJ+ozXnQJBb6PdEf61Mwmemeye3HouJmR6hh81TMWEJBfhlx9umyVDwx60UnY8m8ooq7VLJLlYWITEF+FWx/6+JGZ93MHWS5ombrBUHGWaRqI+6COCLwk7Ho6/cS5nMKO8mDdM3RlPDtruO4ZtZslyVs58hSQsvSFunzN/QMS4lFt8XKH2yyT12gJATtYxEIXtmkjABnK8fz5aWH8NkXtmyyF8cDyyXCAlo/mQuBqwv1DIDAGf6xaDVxvBz2CBbaPvvO7dBVXuqYjyjiJszgBl2RNL6tjqWz0P25dtTIkwnjbUf/1hbmJQ==
+#   prometheus-secrets:
+#     project: monitoring
+#     namespace: monitoring
+#     helm:
+#       <<: *helm
+#       values:
+#         base:
+#           inject:
+#             sealedSecrets:
+#               prometheus-grafana-admin:
+#                 encryptedData:
+#                   admin-password: AgARosdUD9AR74ZR7KTjEyJ3+QL0cFoNodQiX1bL12rcturBJoVLLDckMQs4a1bAf+IV0LjaTwBmvgNyFNPWaAPq55c/LhEPIaAul6d+mu/JCrSwElNFiorIAQgmmoN7+DsTw0kCbG1NjGPG+CqSWkL+02YczUNpAZc+Ry3j3Ep3dbch+b4rFOmRmRofNutP/9Ar2jE24X0nc0pFk1YfIzq+K3358PNeiOv+AMUJEDsZFkS00lbLwo1yb8DjL4tmLDrLU6Rv4H9KZC9wv83gyBXr/Dl8lr8pJrZM6iHLijbY0Qxi6d3H3vbPLrS4/N8yAFx8UuwF7tkspJJ4zNTwNQ20vyYUACIGmv3wMSOWhXzL30uGWYTZWhH0rbMLfPc0YsR51vMF3sL/En2btntxTUyRjvHAGCPAJUaMmsR5nFSKRx2Y/aAfSiZxeDVIBLGssn/Qb6pb9wGLfejLGctAfNp4et+H1EPH37w8MdNIwwlAfLJbbSOWvKpCVmuxPW8DIhLdr+GvaTRrm70IPwihVgtpXNFHOG81K54+pRUzdahzVTrntF35LHfWmQnANHupnrqt/WuQ0FXjKfWPAwVvuU54Tecp+G/u3CNbNTcfBgBi857qLYp2dY9KwUzeMwrfJsLLwmR2D7mdf2ctFUaUkfQNkW4j1IE8bj05wWKZplXndpYlm+dKill3FcNXbDjLCQOhNVycoWDKZ3w2xjIBGfhG
+#                   admin-user: AgCS7Q1Kn8ZrvbVDkTVNOoRtd0jL094YQ3TN6em+8tOoRRGByxX5PpOJc9+srr/GMNZHFmyxJo+KVfEnRF3xPeybKgq6oGPJqh05rmT8tHjGnzmx5QK/gDE+EM49Wq65dby6EhvKJmH0u/OYyUm2BP9gQ7cfJQQ60XZkBlWhdraODWNyGu8keVeA/bs+dIHA1yhx28q7/foIQluR76edCEhnGYudpzEwFj5QRsyj+nHZP8sHucOdFZFxL1RVpJ9KVFblQW5TwYlD0geJwf08QXWJqUek9QFIR0nhhczH+rGk3h9Sb4SiJXS5oB/XYSx2tn9oq5No4QMDEEAT3yxKrvSr1vrFaTLE/VpIy4dxNb9BWuYjcqjxjIA1iHj2LViEcJL87Hl2IpG2XFwx26QdPsEuhT+VX6+FS/hcOZAEuHlPMVR9PRb3gX1X0zHgTOt36wV+zz4qmmqO1c9BLshEQIwRUbWmpAaWtyOAnuDY8hDAr3nXIc+ufxY5sTfmvpq1Cy1OyYuI23i822rqem+osWBNgTpAzs2KVCUJ381Udl6RRuDxk9kojGcKdF8NMumRsSfyfYocNhRK+4Dk43bRrhMPoZepzeklPtM8DuWnkJdP1g2yP2ecfIZxSH0p7Au2+q6AgdP4UuRAgIOgjFuJ8UJfDi1DmxVe3aMUMXVO8dyjZ/ZH+jd4LsFgTVFPS12nQh8ndewOJA==
+#               prometheus-grafana-credentials:
+#                 encryptedData:
+#                   PROD_PROMETHEUS_BASIC_AUTH_PASSWORD: AgBRYMnPi1Ql5A0vr3pgihFJOnduVsyno+4Lnyd41qLCEDYtjyR7T2BPQs/ZwQf/RSHvI4E1bdOGHAqUjSKp58hm4qg+XjoOdqhS082A9cEv+qAvbAWqQuuSWxL3Kl+pMZ/vSai5Tuk0Gw1b4WaWcJQlOBe5UIYi4aBZ0yufNh0GGaYhccd7uVCE8czDD5bn5YRU/ofnLIKbikEXixwNGtDeBG+2kZVcNVC1r6qGnyRFn5NmyTVUIQzFwTK/tT+aV6iImaOXnYSRg/0dmbY8Spp5+5BDsyOgCevJFijpxa81U4rTdczT60YYSpGGP9kOVwow39WFyJj7tNRohsXDHOVqH+UMT9SWDWL2Z0wEB/n+7AG7TrkSom3eqiCHxNyp6DVc/e3RvMAEI4tCEM3BqHCtG0jMGSj5AklhoBHQ4IKTC+Vy3oHfPbGHOAfPYMG0oN9qTHUUPJoTLXNAQ3tQHugG1lBw7YhCSNL/tziYYPoZqCLD9eYc5DdbNBW+wCKpvagptTx1hKP5lPynb/2xxxbXGhexKn/temXeU0KAllka5u9ORqhuxYHG31qI7WSXCS+pu9eI4JuNrGn3v9y6bbZBDm4jM6wvT1oA6U/wXaQ0JBl3jJx+wbl0KzNAjKreaI+dUq72AWheWnyPuCqMorSkDqxE7f4QMdQwMmsJsjEVkNuOyOt1vlfyKb3DuN/FDk6ZNnmmqv8VaA0BGuOC7JSm
+#                   PROD_PROMETHEUS_BASIC_AUTH_USER: AgBnRSfZj6OJOgpOM27/Hk5iokGAomlPEayMBxndhaacJJiV1jE4HwjiB/2z/reXgGICjsgtiG/zX2DcvUC8qzJp2jrbBzTxmvzcsoV69O3UIGyI8EnOytXVkwvYbStihA02ctloS0csyWc63XL+SNi3sg7CsTqwh/Rq03k/qr0xZy8v2NvUYtDX+VDXNxUmC/ABRfXmdJF+6sgHPE6AfKyjkLAOQAOXlf981K6Ds6DP8yGF36s87aieZUTqRJaHT1GBuCU3cCFXkq1t2E2lm3mOHRc8+oMMaloz4ZKLozqiUEvupo2G1b9njgOdwEX9BfPCHt9bVpdLdBQpe7//mFyLMNT+KoIpMbZFsSzmjabUlukvasIFwD9s+Q9LePaUxyK5Gfr1E/rMC1xRoUE1kJ+ozXnQJBb6PdEf61Mwmemeye3HouJmR6hh81TMWEJBfhlx9umyVDwx60UnY8m8ooq7VLJLlYWITEF+FWx/6+JGZ93MHWS5ombrBUHGWaRqI+6COCLwk7Ho6/cS5nMKO8mDdM3RlPDtruO4ZtZslyVs58hSQsvSFunzN/QMS4lFt8XKH2yyT12gJATtYxEIXtmkjABnK8fz5aWH8NkXtmyyF8cDyyXCAlo/mQuBqwv1DIDAGf6xaDVxvBz2CBbaPvvO7dBVXuqYjyjiJszgBl2RNL6tjqWz0P25dtTIkwnjbUf/1hbmJQ==
 
-  prometheus-dashboards:
-    enabled: true
-    project: monitoring
-    namespace: monitoring
-    helm:
-      <<: *helm
-      path: monitoring/prometheus-dashboards
-      values:
-        dashboards-base:
-          enabled: true
-        dashboards-applications:
-          enabled: true
-        dashboards-elasticsearch:
-          enabled: false
-        dashboards-certificates:
-          enabled: true
-        # dashboards-blackbox:
-        #   enabled: true
-        dashboards-ingress:
-          enabled: false
-        dashboards-kafka:
-          enabled: false
-        dashboards-pipelines:
-          enabled: false
-        dashboards-postgres:
-          enabled: false
-        dashboards-redpanda-kafka:
-          enabled: true
-        dashboards-redpanda-core:
-          enabled: true
-        dashboards-new:
-          enabled: true
+#   prometheus-dashboards:
+#     enabled: true
+#     project: monitoring
+#     namespace: monitoring
+#     helm:
+#       <<: *helm
+#       path: monitoring/prometheus-dashboards
+#       values:
+#         dashboards-base:
+#           enabled: true
+#         dashboards-applications:
+#           enabled: true
+#         dashboards-elasticsearch:
+#           enabled: false
+#         dashboards-certificates:
+#           enabled: true
+#         # dashboards-blackbox:
+#         #   enabled: true
+#         dashboards-ingress:
+#           enabled: false
+#         dashboards-kafka:
+#           enabled: false
+#         dashboards-pipelines:
+#           enabled: false
+#         dashboards-postgres:
+#           enabled: false
+#         dashboards-redpanda-kafka:
+#           enabled: true
+#         dashboards-redpanda-core:
+#           enabled: true
+#         dashboards-new:
+#           enabled: true
 
-  prometheus-alerts:
-    enabled: false
-    project: monitoring
-    namespace: monitoring
-    helm:
-      <<: *helm
-      path: monitoring/prometheus-alerts
-      values:
-        environments-status:
-          enabled: true
-        kafka:
-          enabled: true
-        certificates:
-          enabled: true
-        ingress:
-          enabled: false
-        pipelines-main:
-          enabled: true
-        pipelines-other:
-          enabled: true
-        blackbox:
-          enabled: true
+#   prometheus-alerts:
+#     enabled: false
+#     project: monitoring
+#     namespace: monitoring
+#     helm:
+#       <<: *helm
+#       path: monitoring/prometheus-alerts
+#       values:
+#         environments-status:
+#           enabled: true
+#         kafka:
+#           enabled: true
+#         certificates:
+#           enabled: true
+#         ingress:
+#           enabled: false
+#         pipelines-main:
+#           enabled: true
+#         pipelines-other:
+#           enabled: true
+#         blackbox:
+#           enabled: true
 
-  prometheus-stack-crds:
-    project: monitoring
-    namespace: monitoring
-    syncOptions:
-      - Replace=true
-    helm:
-      repository: https://github.com/prometheus-community/helm-charts.git
-      version: kube-prometheus-stack-45.9.0
-      path: charts/kube-prometheus-stack/crds
-      directory:
-        recurse: true
+#   prometheus-stack-crds:
+#     project: monitoring
+#     namespace: monitoring
+#     syncOptions:
+#       - Replace=true
+#     helm:
+#       repository: https://github.com/prometheus-community/helm-charts.git
+#       version: kube-prometheus-stack-45.9.0
+#       path: charts/kube-prometheus-stack/crds
+#       directory:
+#         recurse: true
 
-  # loki-stack:
-  #   project: monitoring
-  #   namespace: monitoring
-  #   helm:
-  #     repository: https://grafana.github.io/helm-charts
-  #     chart: loki-stack
-  #     version: 2.10.3
-  #     values:
-  #       loki:
-  #         enabled: true
-  #         fullnameOverride: loki
-  #         image:
-  #           repository: grafana/loki
-  #           tag: "2.9.10"
-  #         persistence:
-  #           enabled: true
-  #           storageClassName: default
-  #           size: 10Gi
-  #         readinessProbe:
-  #           httpGet:
-  #             path: /ready
-  #             port: http-metrics
-  #           initialDelaySeconds: 180
-  #         livenessProbe:
-  #           httpGet:
-  #             path: /ready
-  #             port: http-metrics
-  #           initialDelaySeconds: 180
-  #         config:
-  #           table_manager:
-  #             retention_deletes_enabled: true
-  #             retention_period: 7d
-  #           limits_config:
-  #             ingestion_rate_mb: 4
-  #             ingestion_burst_size_mb: 8
-  #             max_concurrent_tail_requests: 20
+#   # loki-stack:
+#   #   project: monitoring
+#   #   namespace: monitoring
+#   #   helm:
+#   #     repository: https://grafana.github.io/helm-charts
+#   #     chart: loki-stack
+#   #     version: 2.10.3
+#   #     values:
+#   #       loki:
+#   #         enabled: true
+#   #         fullnameOverride: loki
+#   #         image:
+#   #           repository: grafana/loki
+#   #           tag: "2.9.10"
+#   #         persistence:
+#   #           enabled: true
+#   #           storageClassName: default
+#   #           size: 10Gi
+#   #         readinessProbe:
+#   #           httpGet:
+#   #             path: /ready
+#   #             port: http-metrics
+#   #           initialDelaySeconds: 180
+#   #         livenessProbe:
+#   #           httpGet:
+#   #             path: /ready
+#   #             port: http-metrics
+#   #           initialDelaySeconds: 180
+#   #         config:
+#   #           table_manager:
+#   #             retention_deletes_enabled: true
+#   #             retention_period: 7d
+#   #           limits_config:
+#   #             ingestion_rate_mb: 4
+#   #             ingestion_burst_size_mb: 8
+#   #             max_concurrent_tail_requests: 20
 
-  #       promtail:
-  #         enabled: true
-  #         fullnameOverride: promtail
-  #         serviceMonitor:
-  #           enabled: true
-  #         config:
-  #           clients:
-  #             - url: http://loki:3100/loki/api/v1/push
-  #           snippets:
-  #             pipelineStages:
-  #               - cri: {}
-  #               - labeldrop:
-  #                   - filename
-  #               - output:
-  #                   source: message
-  #         resources:
-  #           requests:
-  #             cpu: 50m
-  #             memory: 128Mi
-  #           limits:
-  #             cpu: 200m
-  #             memory: 256Mi
+#   #       promtail:
+#   #         enabled: true
+#   #         fullnameOverride: promtail
+#   #         serviceMonitor:
+#   #           enabled: true
+#   #         config:
+#   #           clients:
+#   #             - url: http://loki:3100/loki/api/v1/push
+#   #           snippets:
+#   #             pipelineStages:
+#   #               - cri: {}
+#   #               - labeldrop:
+#   #                   - filename
+#   #               - output:
+#   #                   source: message
+#   #         resources:
+#   #           requests:
+#   #             cpu: 50m
+#   #             memory: 128Mi
+#   #           limits:
+#   #             cpu: 200m
+#   #             memory: 256Mi
 
-  prometheus-stack:
-    project: monitoring
-    namespace: monitoring
-    helm:
-      repository: https://prometheus-community.github.io/helm-charts
-      chart: kube-prometheus-stack
-      version: 45.9.0
-      skipCrds: true
-      values:
-        fullnameOverride: prometheus
-        kubeEtcd:
-          enabled: false
-        kubeProxy:
-          enabled: false
-        kubeScheduler:
-          enabled: false
-        kubeControllerManager:
-          enabled: false
-        prometheus:
-          prometheusSpec:
-            externalUrl: https://prometheus.oceansmart.com/prometheus
-            retention: 30d
-            walCompression: true
-            podMonitorSelectorNilUsesHelmValues: false
-            serviceMonitorSelectorNilUsesHelmValues: false
-            storageSpec:
-              volumeClaimTemplate:
-                spec:
-                  storageClassName: default
-                  accessModes: ["ReadWriteOnce"]
-                  resources:
-                    requests:
-                      storage: 128Gi
-            resources:
-              requests:
-                cpu: 500m
-                memory: 2Gi
-              limits:
-                cpu: 2000m
-                memory: 5Gi
+#   prometheus-stack:
+#     project: monitoring
+#     namespace: monitoring
+#     helm:
+#       repository: https://prometheus-community.github.io/helm-charts
+#       chart: kube-prometheus-stack
+#       version: 45.9.0
+#       skipCrds: true
+#       values:
+#         fullnameOverride: prometheus
+#         kubeEtcd:
+#           enabled: false
+#         kubeProxy:
+#           enabled: false
+#         kubeScheduler:
+#           enabled: false
+#         kubeControllerManager:
+#           enabled: false
+#         prometheus:
+#           prometheusSpec:
+#             externalUrl: https://prometheus.oceansmart.com/prometheus
+#             retention: 30d
+#             walCompression: true
+#             podMonitorSelectorNilUsesHelmValues: false
+#             serviceMonitorSelectorNilUsesHelmValues: false
+#             storageSpec:
+#               volumeClaimTemplate:
+#                 spec:
+#                   storageClassName: default
+#                   accessModes: ["ReadWriteOnce"]
+#                   resources:
+#                     requests:
+#                       storage: 128Gi
+#             resources:
+#               requests:
+#                 cpu: 500m
+#                 memory: 2Gi
+#               limits:
+#                 cpu: 2000m
+#                 memory: 5Gi
 
-          additionalServiceMonitors:
-            - name: vessel-position
-              selector:
-                matchLabels:
-                  app.kubernetes.io/name: vessel-positions-aws
-              namespaceSelector:
-                any: true
-              endpoints:
-                - port: metrics
-                  interval: 1m
-            - name: prometheus-ingress
-              selector:
-                matchLabels:
-                  app.kubernetes.io/name: ingress-nginx
-                  app.kubernetes.io/component: controller
-              namespaceSelector:
-                any: true
-              endpoints:
-                - port: metrics
-                  interval: 1m
-            - name: universal-metrics-default
-              selector:
-                matchLabels:
-                  prometheus-metrics: "true"
-              namespaceSelector:
-                any: true
-              endpoints:
-                - port: metrics
-            - name: universal-metrics-1m
-              selector:
-                matchLabels:
-                  prometheus-metrics-1m: "true"
-              namespaceSelector:
-                any: true
-              endpoints:
-                - port: metrics
-                  interval: 1m
-                  scrapeTimeout: 30s
-            - name: universal-metrics-5m
-              selector:
-                matchLabels:
-                  prometheus-metrics-5m: "true"
-              namespaceSelector:
-                any: true
-              endpoints:
-                - port: metrics
-                  interval: 5m
-                  scrapeTimeout: 3m
-            - name: universal-metrics-10m
-              selector:
-                matchLabels:
-                  prometheus-metrics-10m: "true"
-              namespaceSelector:
-                any: true
-              endpoints:
-                - port: metrics
-                  interval: 10m
-                  scrapeTimeout: 8m
-            - name: universal-metrics-15m
-              selector:
-                matchLabels:
-                  prometheus-metrics-15m: "true"
-              namespaceSelector:
-                any: true
-              endpoints:
-                - port: metrics
-                  interval: 15m
-                  scrapeTimeout: 13m
-            - name: universal-metrics-30m
-              selector:
-                matchLabels:
-                  prometheus-metrics-30m: "true"
-              namespaceSelector:
-                any: true
-              endpoints:
-                - port: metrics
-                  interval: 30m
-                  scrapeTimeout: 15m
-            - name: metrics-timescale-pipelines
-              selector:
-                matchLabels:
-                  prometheus-metrics-timescale: "true"
-              namespaceSelector:
-                any: true
-              endpoints:
-                - port: metrics
-                  # path: /metrics
-                  interval: 5m
-                  scrapeTimeout: 5m
-            - name: metrics-tom-cdc
-              selector:
-                matchLabels:
-                  prometheus-metrics-tom-cdc: "true"
-              namespaceSelector:
-                any: true
-              endpoints:
-                - port: metrics
-                  path: /q/metrics
-                  interval: 5m
-                  scrapeTimeout: 5m
+#           additionalServiceMonitors:
+#             - name: vessel-position
+#               selector:
+#                 matchLabels:
+#                   app.kubernetes.io/name: vessel-positions-aws
+#               namespaceSelector:
+#                 any: true
+#               endpoints:
+#                 - port: metrics
+#                   interval: 1m
+#             - name: prometheus-ingress
+#               selector:
+#                 matchLabels:
+#                   app.kubernetes.io/name: ingress-nginx
+#                   app.kubernetes.io/component: controller
+#               namespaceSelector:
+#                 any: true
+#               endpoints:
+#                 - port: metrics
+#                   interval: 1m
+#             - name: universal-metrics-default
+#               selector:
+#                 matchLabels:
+#                   prometheus-metrics: "true"
+#               namespaceSelector:
+#                 any: true
+#               endpoints:
+#                 - port: metrics
+#             - name: universal-metrics-1m
+#               selector:
+#                 matchLabels:
+#                   prometheus-metrics-1m: "true"
+#               namespaceSelector:
+#                 any: true
+#               endpoints:
+#                 - port: metrics
+#                   interval: 1m
+#                   scrapeTimeout: 30s
+#             - name: universal-metrics-5m
+#               selector:
+#                 matchLabels:
+#                   prometheus-metrics-5m: "true"
+#               namespaceSelector:
+#                 any: true
+#               endpoints:
+#                 - port: metrics
+#                   interval: 5m
+#                   scrapeTimeout: 3m
+#             - name: universal-metrics-10m
+#               selector:
+#                 matchLabels:
+#                   prometheus-metrics-10m: "true"
+#               namespaceSelector:
+#                 any: true
+#               endpoints:
+#                 - port: metrics
+#                   interval: 10m
+#                   scrapeTimeout: 8m
+#             - name: universal-metrics-15m
+#               selector:
+#                 matchLabels:
+#                   prometheus-metrics-15m: "true"
+#               namespaceSelector:
+#                 any: true
+#               endpoints:
+#                 - port: metrics
+#                   interval: 15m
+#                   scrapeTimeout: 13m
+#             - name: universal-metrics-30m
+#               selector:
+#                 matchLabels:
+#                   prometheus-metrics-30m: "true"
+#               namespaceSelector:
+#                 any: true
+#               endpoints:
+#                 - port: metrics
+#                   interval: 30m
+#                   scrapeTimeout: 15m
+#             - name: metrics-timescale-pipelines
+#               selector:
+#                 matchLabels:
+#                   prometheus-metrics-timescale: "true"
+#               namespaceSelector:
+#                 any: true
+#               endpoints:
+#                 - port: metrics
+#                   # path: /metrics
+#                   interval: 5m
+#                   scrapeTimeout: 5m
+#             - name: metrics-tom-cdc
+#               selector:
+#                 matchLabels:
+#                   prometheus-metrics-tom-cdc: "true"
+#               namespaceSelector:
+#                 any: true
+#               endpoints:
+#                 - port: metrics
+#                   path: /q/metrics
+#                   interval: 5m
+#                   scrapeTimeout: 5m
 
-        prometheusOperator:
-          configReloaderCpu: 100m
-          resources:
-            requests:
-              # Default: 100m
-              cpu: 50m
-              # Default: 100Mi
-              memory: 64Mi
-            limits:
-              cpu: 200m
-              memory: 256Mi
+#         prometheusOperator:
+#           configReloaderCpu: 100m
+#           resources:
+#             requests:
+#               # Default: 100m
+#               cpu: 50m
+#               # Default: 100Mi
+#               memory: 64Mi
+#             limits:
+#               cpu: 200m
+#               memory: 256Mi
 
-        grafana:
-          fullnameOverride: prometheus-grafana
-          adminPassword: null
-          admin:
-            existingSecret: prometheus-grafana-admin
-          persistence:
-            enabled: true
-            storageClassName: default
-            accessModes: ["ReadWriteOnce"]
-            size: 10Gi
-          # grafana.ini:
-          #   auth.proxy:
-          #     enabled: true
-          #     header_name: X-Auth-Request-Email
-          #     header_property: email
-          #     auto_sign_up: true
-          #     sync_ttl: 60
-          #     enable_login_token: false
-          dashboardProviders:
-            dashboardproviders.yaml:
-              apiVersion: 1
-              providers:
-                - orgId: 1
-                  type: file
-                  editable: true
-                  disableDeletion: false
-                  name: dashboards-base
-                  options:
-                    path: /var/lib/grafana/dashboards/dashboards-base
-                # - orgId: 1
-                #   type: file
-                #   editable: true
-                #   disableDeletion: false
-                #   name: dashboards-elasticsearch
-                #   options:
-                #     path: /var/lib/grafana/dashboards/dashboards-elasticsearch
-                - orgId: 1
-                  type: file
-                  editable: true
-                  disableDeletion: false
-                  name: dashboards-certificates
-                  options:
-                    path: /var/lib/grafana/dashboards/dashboards-certificates
-                # - orgId: 1
-                #   type: file
-                #   editable: true
-                #   disableDeletion: false
-                #   name: dashboards-blackbox
-                #   options:
-                #     path: /var/lib/grafana/dashboards/dashboards-blackbox
-                # - orgId: 1
-                #   type: file
-                #   editable: true
-                #   disableDeletion: false
-                #   name: dashboards-ingress
-                #   options:
-                #     path: /var/lib/grafana/dashboards/dashboards-ingress
-                # - orgId: 1
-                #   type: file
-                #   editable: true
-                #   disableDeletion: false
-                #   name: dashboards-kafka
-                #   options:
-                #     path: /var/lib/grafana/dashboards/dashboards-kafka
-                # - orgId: 1
-                #   type: file
-                #   editable: true
-                #   disableDeletion: false
-                #   name: dashboards-pipelines
-                #   options:
-                #     path: /var/lib/grafana/dashboards/dashboards-pipelines
-                # - orgId: 1
-                #   type: file
-                #   editable: true
-                #   disableDeletion: false
-                #   name: dashboards-postgres
-                #   options:
-                #     path: /var/lib/grafana/dashboards/dashboards-postgres
-                - orgId: 1
-                  type: file
-                  editable: true
-                  disableDeletion: false
-                  name: dashboards-applications
-                  options:
-                    path: /var/lib/grafana/dashboards/dashboards-applications
-                - orgId: 1
-                  type: file
-                  editable: true
-                  disableDeletion: false
-                  name: dashboards-redpanda-kafka
-                  folder: "Redpanda Kafka Dashboards"
-                  updateIntervalSeconds: 10
-                  options:
-                    path: /var/lib/grafana/dashboards/dashboards-redpanda-kafka
-                    foldersFromFilesStructure: false
-                - orgId: 1
-                  type: file
-                  editable: true
-                  disableDeletion: false
-                  name: dashboards-redpanda-core
-                  folder: "Redpanda Core Dashboards"
-                  updateIntervalSeconds: 10
-                  options:
-                    path: /var/lib/grafana/dashboards/dashboards-redpanda-core
-                    foldersFromFilesStructure: false
-                - orgId: 1
-                  type: file
-                  editable: true
-                  disableDeletion: false
-                  name: dashboards-new
-                  folder: "K8s New Dashboards"
-                  updateIntervalSeconds: 10
-                  options:
-                    path: /var/lib/grafana/dashboards/dashboards-new
-                    foldersFromFilesStructure: false
-                - orgId: 1
-                  type: file
-                  editable: true
-                  disableDeletion: false
-                  name: dashboards-logs
-                  folder: "K8s Logs Dashboards"
-                  updateIntervalSeconds: 10
-                  options:
-                    path: /var/lib/grafana/dashboards/dashboards-logs
-                    foldersFromFilesStructure: false
-                - orgId: 1
-                  type: file
-                  editable: true
-                  disableDeletion: false
-                  name: dashboards-master
-                  folder: "K8s Control Plane Dashboards"
-                  updateIntervalSeconds: 10
-                  options:
-                    path: /var/lib/grafana/dashboards/dashboards-master
-                    foldersFromFilesStructure: false
-          dashboardsConfigMaps:
-            dashboards-base: prometheus-dashboards-base
-            # dashboards-elasticsearch: prometheus-dashboards-elasticsearch
-            # dashboards-ingress: prometheus-dashboards-ingress
-            dashboards-certificates: prometheus-dashboards-certificates
-            # dashboards-blackbox: prometheus-dashboards-blackbox
-            # dashboards-kafka: prometheus-dashboards-kafka
-            # dashboards-pipelines: prometheus-dashboards-pipelines
-            # dashboards-postgres: prometheus-dashboards-postgres
-            dashboards-applications: prometheus-dashboards-applications
-            dashboards-redpanda-kafka: prometheus-dashboards-redpanda-kafka
-            dashboards-redpanda-core: prometheus-dashboards-redpanda-core
-            dashboards-new: prometheus-dashboards-new
-            dashboards-master: prometheus-dashboards-master
-            dashboards-logs: prometheus-dashboards-logs
-          envFromSecrets:
-            - name: prometheus-grafana-credentials
-          resources:
-            requests:
-              # Default: 100m
-              cpu: 50m
-              # Default: 128Mi
-              memory: 64Mi
-            limits:
-              cpu: 200m
-              memory: 512Mi
-          sidecar:
-            datasources:
-              enabled: true
-              label: grafana_datasource
-              labelValue: "1"
-              defaultDatasourceEnabled: false
-            # deleteDatasources:
-            #   - name: Prometheus
-            #     orgId: 1
-            #     uid: prometheus
-            # additionalDataSources:
-            # - name: Production
-            #   type: prometheus
-            #   uid: prometheus
-            #   access: proxy
-            #   url: https://monitoring.oceansmart.com/prometheus
-            #   isDefault: true
-            #   editable: true
-            # - name: Preview
-            #   type: prometheus
-            #   access: proxy
-            #   url: https://preview-monitoring.oceansmart.com/prometheus
-            #   editable: true
-            # - name: Non-Prod (Qc, Rc)
-            #   type: prometheus
-            #   access: proxy
-            #   url: https://prometheus.oceansmart.com
-            #   editable: true
-            resources:
-              requests:
-                cpu: 50m
-                memory: 64Mi
-              limits:
-                cpu: 200m
-                memory: 512Mi
-          additionalDataSources:
-            # - name: Loki
-            #   type: loki
-            #   access: proxy
-            #   uid: loki
-            #   url: http://loki.monitoring.svc.cluster.local:3100
-            #   isDefault: false
-            #   jsonData:
-            #     maxLines: 1000
-            - name: Prometheus
-              uid: prometheus
-              type: prometheus
-              access: proxy
-              url: http://prometheus-prometheus.monitoring.svc.cluster.local:9090
-              isDefault: true
-              jsonData:
-                timeInterval: 30s
-            - name: Alertmanager
-              uid: alertmanager
-              type: alertmanager
-              access: proxy
-              url: http://prometheus-alertmanager.monitoring.svc.cluster.local:9093
-              jsonData:
-                implementation: prometheus
+#         grafana:
+#           fullnameOverride: prometheus-grafana
+#           adminPassword: null
+#           admin:
+#             existingSecret: prometheus-grafana-admin
+#           persistence:
+#             enabled: true
+#             storageClassName: default
+#             accessModes: ["ReadWriteOnce"]
+#             size: 10Gi
+#           # grafana.ini:
+#           #   auth.proxy:
+#           #     enabled: true
+#           #     header_name: X-Auth-Request-Email
+#           #     header_property: email
+#           #     auto_sign_up: true
+#           #     sync_ttl: 60
+#           #     enable_login_token: false
+#           dashboardProviders:
+#             dashboardproviders.yaml:
+#               apiVersion: 1
+#               providers:
+#                 - orgId: 1
+#                   type: file
+#                   editable: true
+#                   disableDeletion: false
+#                   name: dashboards-base
+#                   options:
+#                     path: /var/lib/grafana/dashboards/dashboards-base
+#                 # - orgId: 1
+#                 #   type: file
+#                 #   editable: true
+#                 #   disableDeletion: false
+#                 #   name: dashboards-elasticsearch
+#                 #   options:
+#                 #     path: /var/lib/grafana/dashboards/dashboards-elasticsearch
+#                 - orgId: 1
+#                   type: file
+#                   editable: true
+#                   disableDeletion: false
+#                   name: dashboards-certificates
+#                   options:
+#                     path: /var/lib/grafana/dashboards/dashboards-certificates
+#                 # - orgId: 1
+#                 #   type: file
+#                 #   editable: true
+#                 #   disableDeletion: false
+#                 #   name: dashboards-blackbox
+#                 #   options:
+#                 #     path: /var/lib/grafana/dashboards/dashboards-blackbox
+#                 # - orgId: 1
+#                 #   type: file
+#                 #   editable: true
+#                 #   disableDeletion: false
+#                 #   name: dashboards-ingress
+#                 #   options:
+#                 #     path: /var/lib/grafana/dashboards/dashboards-ingress
+#                 # - orgId: 1
+#                 #   type: file
+#                 #   editable: true
+#                 #   disableDeletion: false
+#                 #   name: dashboards-kafka
+#                 #   options:
+#                 #     path: /var/lib/grafana/dashboards/dashboards-kafka
+#                 # - orgId: 1
+#                 #   type: file
+#                 #   editable: true
+#                 #   disableDeletion: false
+#                 #   name: dashboards-pipelines
+#                 #   options:
+#                 #     path: /var/lib/grafana/dashboards/dashboards-pipelines
+#                 # - orgId: 1
+#                 #   type: file
+#                 #   editable: true
+#                 #   disableDeletion: false
+#                 #   name: dashboards-postgres
+#                 #   options:
+#                 #     path: /var/lib/grafana/dashboards/dashboards-postgres
+#                 - orgId: 1
+#                   type: file
+#                   editable: true
+#                   disableDeletion: false
+#                   name: dashboards-applications
+#                   options:
+#                     path: /var/lib/grafana/dashboards/dashboards-applications
+#                 - orgId: 1
+#                   type: file
+#                   editable: true
+#                   disableDeletion: false
+#                   name: dashboards-redpanda-kafka
+#                   folder: "Redpanda Kafka Dashboards"
+#                   updateIntervalSeconds: 10
+#                   options:
+#                     path: /var/lib/grafana/dashboards/dashboards-redpanda-kafka
+#                     foldersFromFilesStructure: false
+#                 - orgId: 1
+#                   type: file
+#                   editable: true
+#                   disableDeletion: false
+#                   name: dashboards-redpanda-core
+#                   folder: "Redpanda Core Dashboards"
+#                   updateIntervalSeconds: 10
+#                   options:
+#                     path: /var/lib/grafana/dashboards/dashboards-redpanda-core
+#                     foldersFromFilesStructure: false
+#                 - orgId: 1
+#                   type: file
+#                   editable: true
+#                   disableDeletion: false
+#                   name: dashboards-new
+#                   folder: "K8s New Dashboards"
+#                   updateIntervalSeconds: 10
+#                   options:
+#                     path: /var/lib/grafana/dashboards/dashboards-new
+#                     foldersFromFilesStructure: false
+#                 - orgId: 1
+#                   type: file
+#                   editable: true
+#                   disableDeletion: false
+#                   name: dashboards-logs
+#                   folder: "K8s Logs Dashboards"
+#                   updateIntervalSeconds: 10
+#                   options:
+#                     path: /var/lib/grafana/dashboards/dashboards-logs
+#                     foldersFromFilesStructure: false
+#                 - orgId: 1
+#                   type: file
+#                   editable: true
+#                   disableDeletion: false
+#                   name: dashboards-master
+#                   folder: "K8s Control Plane Dashboards"
+#                   updateIntervalSeconds: 10
+#                   options:
+#                     path: /var/lib/grafana/dashboards/dashboards-master
+#                     foldersFromFilesStructure: false
+#           dashboardsConfigMaps:
+#             dashboards-base: prometheus-dashboards-base
+#             # dashboards-elasticsearch: prometheus-dashboards-elasticsearch
+#             # dashboards-ingress: prometheus-dashboards-ingress
+#             dashboards-certificates: prometheus-dashboards-certificates
+#             # dashboards-blackbox: prometheus-dashboards-blackbox
+#             # dashboards-kafka: prometheus-dashboards-kafka
+#             # dashboards-pipelines: prometheus-dashboards-pipelines
+#             # dashboards-postgres: prometheus-dashboards-postgres
+#             dashboards-applications: prometheus-dashboards-applications
+#             dashboards-redpanda-kafka: prometheus-dashboards-redpanda-kafka
+#             dashboards-redpanda-core: prometheus-dashboards-redpanda-core
+#             dashboards-new: prometheus-dashboards-new
+#             dashboards-master: prometheus-dashboards-master
+#             dashboards-logs: prometheus-dashboards-logs
+#           envFromSecrets:
+#             - name: prometheus-grafana-credentials
+#           resources:
+#             requests:
+#               # Default: 100m
+#               cpu: 50m
+#               # Default: 128Mi
+#               memory: 64Mi
+#             limits:
+#               cpu: 200m
+#               memory: 512Mi
+#           sidecar:
+#             datasources:
+#               enabled: true
+#               label: grafana_datasource
+#               labelValue: "1"
+#               defaultDatasourceEnabled: false
+#             # deleteDatasources:
+#             #   - name: Prometheus
+#             #     orgId: 1
+#             #     uid: prometheus
+#             # additionalDataSources:
+#             # - name: Production
+#             #   type: prometheus
+#             #   uid: prometheus
+#             #   access: proxy
+#             #   url: https://monitoring.oceansmart.com/prometheus
+#             #   isDefault: true
+#             #   editable: true
+#             # - name: Preview
+#             #   type: prometheus
+#             #   access: proxy
+#             #   url: https://preview-monitoring.oceansmart.com/prometheus
+#             #   editable: true
+#             # - name: Non-Prod (Qc, Rc)
+#             #   type: prometheus
+#             #   access: proxy
+#             #   url: https://prometheus.oceansmart.com
+#             #   editable: true
+#             resources:
+#               requests:
+#                 cpu: 50m
+#                 memory: 64Mi
+#               limits:
+#                 cpu: 200m
+#                 memory: 512Mi
+#           additionalDataSources:
+#             # - name: Loki
+#             #   type: loki
+#             #   access: proxy
+#             #   uid: loki
+#             #   url: http://loki.monitoring.svc.cluster.local:3100
+#             #   isDefault: false
+#             #   jsonData:
+#             #     maxLines: 1000
+#             - name: Prometheus
+#               uid: prometheus
+#               type: prometheus
+#               access: proxy
+#               url: http://prometheus-prometheus.monitoring.svc.cluster.local:9090
+#               isDefault: true
+#               jsonData:
+#                 timeInterval: 30s
+#             - name: Alertmanager
+#               uid: alertmanager
+#               type: alertmanager
+#               access: proxy
+#               url: http://prometheus-alertmanager.monitoring.svc.cluster.local:9093
+#               jsonData:
+#                 implementation: prometheus
 
-        kube-state-metrics:
-          fullnameOverride: prometheus-kube-state-metrics
-          resources:
-            requests:
-              cpu: 20m
-              memory: 32Mi
-            limits:
-              cpu: 100m
-              memory: 128Mi
-        prometheus-node-exporter:
-          fullnameOverride: prometheus-node-exporter
-          resources:
-            requests:
-              cpu: 50m
-              memory: 32Mi
-            limits:
-              cpu: 250m
-              memory: 64Mi
-        alertmanager:
-          alertmanagerSpec:
-            retention: 120h
-            externalUrl: https://monitoring.oceansmart.com/karma
-            resources:
-              requests:
-                cpu: 50m
-                memory: 32Mi
-              limits:
-                cpu: 200m
-                memory: 256Mi
-          # config:
-          #   route:
-          #     group_by: ["alertname"]
-          #     receiver: production-system
-          #     routes:
-          #       - receiver: "null"
-          #         match:
-          #           alertname: InfoInhibitor
-          #       - receiver: production-system
-          #         match_re:
-          #           alertname: ^(ApplicationDown|KubeNodeNotReady|KubePodCrashLooping|KubeDeploymentReplicasMismatch|KubeStatefulSetReplicasMismatch|KubeContainerWaiting|KubePersistentVolumeFillingUp)$
-          #       # - receiver: production-critical
-          #       #   match_re:
-          #       #     route: ^certificates$
-          #       # - receiver: production-system
-          #       #   match:
-          #       #     route: ingress
-          #       # - receiver: production-kafka
-          #       #   match:
-          #       #     route: kafka
-          #       # - receiver: production-pipelines
-          #       #   match:
-          #       #     route: pipelines
-          #   receivers:
-          #     - name: "null"
-          #     - name: "production-system"
-          #       slack_configs:
-          #         - api_url: ""
-          #           channel: "#alerts-test"
-          #           send_resolved: true
+#         kube-state-metrics:
+#           fullnameOverride: prometheus-kube-state-metrics
+#           resources:
+#             requests:
+#               cpu: 20m
+#               memory: 32Mi
+#             limits:
+#               cpu: 100m
+#               memory: 128Mi
+#         prometheus-node-exporter:
+#           fullnameOverride: prometheus-node-exporter
+#           resources:
+#             requests:
+#               cpu: 50m
+#               memory: 32Mi
+#             limits:
+#               cpu: 250m
+#               memory: 64Mi
+#         alertmanager:
+#           alertmanagerSpec:
+#             retention: 120h
+#             externalUrl: https://monitoring.oceansmart.com/karma
+#             resources:
+#               requests:
+#                 cpu: 50m
+#                 memory: 32Mi
+#               limits:
+#                 cpu: 200m
+#                 memory: 256Mi
+#           # config:
+#           #   route:
+#           #     group_by: ["alertname"]
+#           #     receiver: production-system
+#           #     routes:
+#           #       - receiver: "null"
+#           #         match:
+#           #           alertname: InfoInhibitor
+#           #       - receiver: production-system
+#           #         match_re:
+#           #           alertname: ^(ApplicationDown|KubeNodeNotReady|KubePodCrashLooping|KubeDeploymentReplicasMismatch|KubeStatefulSetReplicasMismatch|KubeContainerWaiting|KubePersistentVolumeFillingUp)$
+#           #       # - receiver: production-critical
+#           #       #   match_re:
+#           #       #     route: ^certificates$
+#           #       # - receiver: production-system
+#           #       #   match:
+#           #       #     route: ingress
+#           #       # - receiver: production-kafka
+#           #       #   match:
+#           #       #     route: kafka
+#           #       # - receiver: production-pipelines
+#           #       #   match:
+#           #       #     route: pipelines
+#           #   receivers:
+#           #     - name: "null"
+#           #     - name: "production-system"
+#           #       slack_configs:
+#           #         - api_url: ""
+#           #           channel: "#alerts-test"
+#           #           send_resolved: true
 
 
-  prometheus-karma:
-    project: monitoring
-    namespace: monitoring
-    helm:
-      <<: *helm
-      values:
-        name: prometheus
-        deployments: ["karma"]
-        karma:
-          image:
-            repository: lmierzwa/karma
-            tag: v0.108
-          environment:
-            CONFIG_FILE: /etc/karma/karma.conf
-          volumes:
-            config:
-              configMap:
-                name: prometheus-karma
-              mounts:
-                - mountPath: /etc/karma
-          service:
-            ports:
-              - port: 8080
-          resources:
-            requests:
-              cpu: 20m
-              memory: 16Mi
-            limits:
-              cpu: 100m
-              memory: 256Mi
-    config:
-      alertmanager:
-        servers:
-          - name: production-new
-            uri: http://prometheus-alertmanager:9093
-            healthcheck:
-              filters:
-                watchdog:
-                  - alertname=Watchdog
-      grid:
-        sorting:
-          order: label
-          reverse: false
-          label: severity
-          customValues:
-            labels:
-              severity:
-                critical: 1
-                warning: 2
-                info: 3
+#   prometheus-karma:
+#     project: monitoring
+#     namespace: monitoring
+#     helm:
+#       <<: *helm
+#       values:
+#         name: prometheus
+#         deployments: ["karma"]
+#         karma:
+#           image:
+#             repository: lmierzwa/karma
+#             tag: v0.108
+#           environment:
+#             CONFIG_FILE: /etc/karma/karma.conf
+#           volumes:
+#             config:
+#               configMap:
+#                 name: prometheus-karma
+#               mounts:
+#                 - mountPath: /etc/karma
+#           service:
+#             ports:
+#               - port: 8080
+#           resources:
+#             requests:
+#               cpu: 20m
+#               memory: 16Mi
+#             limits:
+#               cpu: 100m
+#               memory: 256Mi
+#     config:
+#       alertmanager:
+#         servers:
+#           - name: production-new
+#             uri: http://prometheus-alertmanager:9093
+#             healthcheck:
+#               filters:
+#                 watchdog:
+#                   - alertname=Watchdog
+#       grid:
+#         sorting:
+#           order: label
+#           reverse: false
+#           label: severity
+#           customValues:
+#             labels:
+#               severity:
+#                 critical: 1
+#                 warning: 2
+#                 info: 3
 
-  prometheus-web:
-    project: monitoring
-    namespace: monitoring
-    helm:
-      <<: *helm
-      values:
-        name: prometheus
-        ingresses: ["grafana", "prometheus", "karma", "alertmanager"]
-        grafana:
-          service: prometheus-grafana
-          port: 80
-          tls: true
-        prometheus:
-          service: prometheus-prometheus
-          port: 9090
-          tls: true
-          tlsSecretName: monitoring-tls
-        karma:
-          service: prometheus-karma
-          port: 8080
-          tls: true
-          tlsSecretName: prometheus-web-certificate
-        alertmanager:
-          service: prometheus-alertmanager
-          port: 9093
-          tls: true
-          tlsSecretName: prometheus-web-certificate
+#   prometheus-web:
+#     project: monitoring
+#     namespace: monitoring
+#     helm:
+#       <<: *helm
+#       values:
+#         name: prometheus
+#         ingresses: ["grafana", "prometheus", "karma", "alertmanager"]
+#         grafana:
+#           service: prometheus-grafana
+#           port: 80
+#           tls: true
+#         prometheus:
+#           service: prometheus-prometheus
+#           port: 9090
+#           tls: true
+#           tlsSecretName: monitoring-tls
+#         karma:
+#           service: prometheus-karma
+#           port: 8080
+#           tls: true
+#           tlsSecretName: prometheus-web-certificate
+#         alertmanager:
+#           service: prometheus-alertmanager
+#           port: 9093
+#           tls: true
+#           tlsSecretName: prometheus-web-certificate
