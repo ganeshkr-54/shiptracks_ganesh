@@ -38,7 +38,7 @@ spec:
     helm:
       version: v3
       releaseName: {{ $application.helm.release | default $applicationName | quote }}
-      enableDependencyUpdate: true
+      
       {{- if $application.helm.valueFiles }}
       valueFiles:
         {{- toYaml $application.helm.valueFiles | nindent 8 }}
