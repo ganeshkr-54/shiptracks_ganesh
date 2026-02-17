@@ -98,7 +98,7 @@ jobs:
 
       - name: Upload backend artifact
         if: ${{ steps.vars.outputs.run == 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.artifact.outputs.TF_ARTIFACT_NAME }}
           path: ${{ env.TF_OUTPUT_FILE }}
