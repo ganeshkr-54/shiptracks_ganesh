@@ -29,7 +29,6 @@ Thumbs.db
 **/*.jar
 **/*.rar
 **/*.tar
-**/*.tgz
 **/*.zip
 
 # IDE #
