@@ -1,302 +1,99 @@
-# _auth-basic: &auth-basic
-#   nginx.ingress.kubernetes.io/auth-type: basic
-#   nginx.ingress.kubernetes.io/auth-secret: prometheus-basic-auth
-#   nginx.ingress.kubernetes.io/auth-realm: Restricted
-
-# _auth-oauth: &auth-oauth
-#   nginx.ingress.kubernetes.io/auth-url: "http://oauth-proxy.oauth.svc.cluster.local:4180/oauth2/auth"
-#   nginx.ingress.kubernetes.io/auth-signin: "https://oauth.oceansmart.com/oauth2/start?rd=$scheme:%2F%2F$http_host$escaped_request_uri"
-#   nginx.ingress.kubernetes.io/auth-response-headers: "Authorization, X-Auth-Request-User, X-Auth-Request-Email"
 _helm: &helm
-  repository: https://github.com/ganeshkr-54/shiptracks_ganesh.git
+  repository: https://github.com/shiptracks/devops.git
   branch: main
-  path: base
+  path: helm/monitoring/prometheus
+
+projects:
+  monitoring:
+    resourceWhitelist:
+      - group: "*"
+        kind: "*"
+    destination:
+      namespaces:
+        - observability
 
 applications:
-  prometheus-web:
+  prometheus-stack:
+    project: monitoring
+    namespace: observability
     helm:
-      values:
-        grafana:
-          tlsSecretName: monitoring-tls
-          annotations:
-            appgw.ingress.kubernetes.io/request-timeout: "3600"
-            appgw.ingress.kubernetes.io/ssl-redirect: "true"
-            appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399,401,403,404"
-          hosts:
-            - host: preview-monitoring.oceansmart.com
-              paths:
-                - path: "/grafana"
-        prometheus:
-          tlsSecretName: monitoring-tls
-          annotations:
-            appgw.ingress.kubernetes.io/request-timeout: "3600"
-            appgw.ingress.kubernetes.io/ssl-redirect: "true"
-            appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399,401,403,404"
-          hosts:
-            - host: preview-monitoring.oceansmart.com
-              # paths:
-              #   - path: "/prometheus"
-        karma:
-          tlsSecretName: monitoring-tls
-          annotations:
-            appgw.ingress.kubernetes.io/request-timeout: "3600"
-            appgw.ingress.kubernetes.io/ssl-redirect: "true"
-            appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399,401,403,404"
-          hosts:
-            - host: preview-monitoring.oceansmart.com
-              paths:
-                - path: "/karma"
-        alertmanager:
-          tlsSecretName: monitoring-tls
-          annotations:
-            appgw.ingress.kubernetes.io/request-timeout: "3600"
-            appgw.ingress.kubernetes.io/ssl-redirect: "true"
-            appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399,401,403,404"
-          hosts:
-            - host: preview-monitoring.oceansmart.com
-              paths:
-                - path: "/alertmanager"
+      repository: https://github.com/shiptracks/devops.git
+      version: main
+      path: helm/monitoring/prometheus
+      release: kube-prometheus-stack
+      valueFiles:
+        - values.yaml
+    syncPolicy:
+      automated:
+        prune: false
+        selfHeal: true
 
-  prometheus-secrets:
-            project: monitoring
-            namespace: monitoring
-            helm:
-              <<: *helm
-              values:
-                base:
-                  inject:
-                    sealedSecrets:
-                      prometheus-grafana-admin:
-                        encryptedData:
-                          admin-password: AgARosdUD9AR74ZR7KTjEyJ3+QL0cFoNodQiX1bL12rcturBJoVLLDckMQs4a1bAf+IV0LjaTwBmvgNyFNPWaAPq55c/LhEPIaAul6d+mu/JCrSwElNFiorIAQgmmoN7+DsTw0kCbG1NjGPG+CqSWkL+02YczUNpAZc+Ry3j3Ep3dbch+b4rFOmRmRofNutP/9Ar2jE24X0nc0pFk1YfIzq+K3358PNeiOv+AMUJEDsZFkS00lbLwo1yb8DjL4tmLDrLU6Rv4H9KZC9wv83gyBXr/Dl8lr8pJrZM6iHLijbY0Qxi6d3H3vbPLrS4/N8yAFx8UuwF7tkspJJ4zNTwNQ20vyYUACIGmv3wMSOWhXzL30uGWYTZWhH0rbMLfPc0YsR51vMF3sL/En2btntxTUyRjvHAGCPAJUaMmsR5nFSKRx2Y/aAfSiZxeDVIBLGssn/Qb6pb9wGLfejLGctAfNp4et+H1EPH37w8MdNIwwlAfLJbbSOWvKpCVmuxPW8DIhLdr+GvaTRrm70IPwihVgtpXNFHOG81K54+pRUzdahzVTrntF35LHfWmQnANHupnrqt/WuQ0FXjKfWPAwVvuU54Tecp+G/u3CNbNTcfBgBi857qLYp2dY9KwUzeMwrfJsLLwmR2D7mdf2ctFUaUkfQNkW4j1IE8bj05wWKZplXndpYlm+dKill3FcNXbDjLCQOhNVycoWDKZ3w2xjIBGfhG
-                          admin-user: AgCS7Q1Kn8ZrvbVDkTVNOoRtd0jL094YQ3TN6em+8tOoRRGByxX5PpOJc9+srr/GMNZHFmyxJo+KVfEnRF3xPeybKgq6oGPJqh05rmT8tHjGnzmx5QK/gDE+EM49Wq65dby6EhvKJmH0u/OYyUm2BP9gQ7cfJQQ60XZkBlWhdraODWNyGu8keVeA/bs+dIHA1yhx28q7/foIQluR76edCEhnGYudpzEwFj5QRsyj+nHZP8sHucOdFZFxL1RVpJ9KVFblQW5TwYlD0geJwf08QXWJqUek9QFIR0nhhczH+rGk3h9Sb4SiJXS5oB/XYSx2tn9oq5No4QMDEEAT3yxKrvSr1vrFaTLE/VpIy4dxNb9BWuYjcqjxjIA1iHj2LViEcJL87Hl2IpG2XFwx26QdPsEuhT+VX6+FS/hcOZAEuHlPMVR9PRb3gX1X0zHgTOt36wV+zz4qmmqO1c9BLshEQIwRUbWmpAaWtyOAnuDY8hDAr3nXIc+ufxY5sTfmvpq1Cy1OyYuI23i822rqem+osWBNgTpAzs2KVCUJ381Udl6RRuDxk9kojGcKdF8NMumRsSfyfYocNhRK+4Dk43bRrhMPoZepzeklPtM8DuWnkJdP1g2yP2ecfIZxSH0p7Au2+q6AgdP4UuRAgIOgjFuJ8UJfDi1DmxVe3aMUMXVO8dyjZ/ZH+jd4LsFgTVFPS12nQh8ndewOJA==
-                      prometheus-grafana-credentials:
-                        encryptedData:
-                          PROD_PROMETHEUS_BASIC_AUTH_PASSWORD: AgBRYMnPi1Ql5A0vr3pgihFJOnduVsyno+4Lnyd41qLCEDYtjyR7T2BPQs/ZwQf/RSHvI4E1bdOGHAqUjSKp58hm4qg+XjoOdqhS082A9cEv+qAvbAWqQuuSWxL3Kl+pMZ/vSai5Tuk0Gw1b4WaWcJQlOBe5UIYi4aBZ0yufNh0GGaYhccd7uVCE8czDD5bn5YRU/ofnLIKbikEXixwNGtDeBG+2kZVcNVC1r6qGnyRFn5NmyTVUIQzFwTK/tT+aV6iImaOXnYSRg/0dmbY8Spp5+5BDsyOgCevJFijpxa81U4rTdczT60YYSpGGP9kOVwow39WFyJj7tNRohsXDHOVqH+UMT9SWDWL2Z0wEB/n+7AG7TrkSom3eqiCHxNyp6DVc/e3RvMAEI4tCEM3BqHCtG0jMGSj5AklhoBHQ4IKTC+Vy3oHfPbGHOAfPYMG0oN9qTHUUPJoTLXNAQ3tQHugG1lBw7YhCSNL/tziYYPoZqCLD9eYc5DdbNBW+wCKpvagptTx1hKP5lPynb/2xxxbXGhexKn/temXeU0KAllka5u9ORqhuxYHG31qI7WSXCS+pu9eI4JuNrGn3v9y6bbZBDm4jM6wvT1oA6U/wXaQ0JBl3jJx+wbl0KzNAjKreaI+dUq72AWheWnyPuCqMorSkDqxE7f4QMdQwMmsJsjEVkNuOyOt1vlfyKb3DuN/FDk6ZNnmmqv8VaA0BGuOC7JSm
-                          PROD_PROMETHEUS_BASIC_AUTH_USER: AgBnRSfZj6OJOgpOM27/Hk5iokGAomlPEayMBxndhaacJJiV1jE4HwjiB/2z/reXgGICjsgtiG/zX2DcvUC8qzJp2jrbBzTxmvzcsoV69O3UIGyI8EnOytXVkwvYbStihA02ctloS0csyWc63XL+SNi3sg7CsTqwh/Rq03k/qr0xZy8v2NvUYtDX+VDXNxUmC/ABRfXmdJF+6sgHPE6AfKyjkLAOQAOXlf981K6Ds6DP8yGF36s87aieZUTqRJaHT1GBuCU3cCFXkq1t2E2lm3mOHRc8+oMMaloz4ZKLozqiUEvupo2G1b9njgOdwEX9BfPCHt9bVpdLdBQpe7//mFyLMNT+KoIpMbZFsSzmjabUlukvasIFwD9s+Q9LePaUxyK5Gfr1E/rMC1xRoUE1kJ+ozXnQJBb6PdEf61Mwmemeye3HouJmR6hh81TMWEJBfhlx9umyVDwx60UnY8m8ooq7VLJLlYWITEF+FWx/6+JGZ93MHWS5ombrBUHGWaRqI+6COCLwk7Ho6/cS5nMKO8mDdM3RlPDtruO4ZtZslyVs58hSQsvSFunzN/QMS4lFt8XKH2yyT12gJATtYxEIXtmkjABnK8fz5aWH8NkXtmyyF8cDyyXCAlo/mQuBqwv1DIDAGf6xaDVxvBz2CBbaPvvO7dBVXuqYjyjiJszgBl2RNL6tjqWz0P25dtTIkwnjbUf/1hbmJQ==
 
-  metrics-blackbox-exporter:
-    helm:
-      values:
-        serviceMonitor:
-          targets:
-            # Webapp
-            - name: webapp-production
-              url: https://app.oceansmart.com
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: Webapp
-                - targetLabel: environment
-                  replacement: Production
-            - name: webapp-preview
-              url: https://preview.oceansmart.com
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: Webapp
-                - targetLabel: environment
-                  replacement: Preview
-            - name: webapp-rc
-              url: https://os-rc.oiigds.com
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: Webapp
-                - targetLabel: environment
-                  replacement: RC
-            - name: webapp-staging
-              url: https://staging.oceansmart.com
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: Webapp
-                - targetLabel: environment
-                  replacement: Staging
-            # Access Control
-            - name: access-control-production
-              url: https://access-control.oceansmart.com
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: Access Control
-                - targetLabel: environment
-                  replacement: Production
-            - name: access-control-preview
-              url: https://accesscontrol-preview.oceansmart.com
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: Access Control
-                - targetLabel: environment
-                  replacement: Preview
-            - name: access-control-rc
-              url: https://accesscontrol.rc.oceansmart.com
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: Access Control
-                - targetLabel: environment
-                  replacement: RC
-            - name: access-control-staging
-              url: https://accesscontrol.staging.oceansmart.com
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: Access Control
-                - targetLabel: environment
-                  replacement: Staging
-            # GraphQL
-            - name: graphql-production
-              url: https://gql.oceansmart.com/graphql?query=%7B__typename%7D
-              module: http_2xx_json
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: GraphQL
-                - targetLabel: environment
-                  replacement: Production
-            - name: graphql-preview
-              url: https://gql-preview.oceansmart.com/graphql?query=%7B__typename%7D
-              module: http_2xx_json
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: GraphQL
-                - targetLabel: environment
-                  replacement: Preview
-            - name: graphql-rc
-              url: https://gql.rc.oceansmart.com/graphql?query=%7B__typename%7D
-              module: http_2xx_json
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: GraphQL
-                - targetLabel: environment
-                  replacement: RC
-            - name: graphql-staging
-              url: https://gql.staging.oceansmart.com/graphql?query=%7B__typename%7D
-              module: http_2xx_json
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: GraphQL
-                - targetLabel: environment
-                  replacement: Staging
-            # GraphQL Web
-            - name: graphql-web-production
-              url: https://gql.oceansmart.com/be-gateway/graphql?query=%7B__typename%7D
-              module: http_2xx_json
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: GraphQL Web
-                - targetLabel: environment
-                  replacement: Production
-            - name: graphql-web-preview
-              url: https://gql-preview.oceansmart.com/be-gateway/graphql?query=%7B__typename%7D
-              module: http_2xx_json
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: GraphQL Web
-                - targetLabel: environment
-                  replacement: Preview
-            - name: graphql-web-rc
-              url: https://gql.rc.oceansmart.com/be-gateway/graphql?query=%7B__typename%7D
-              module: http_2xx_json
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: GraphQL Web
-                - targetLabel: environment
-                  replacement: RC
-            - name: graphql-web-staging
-              url: https://gql.staging.oceansmart.com/be-gateway/graphql?query=%7B__typename%7D
-              module: http_2xx_json
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: GraphQL Web
-                - targetLabel: environment
-                  replacement: Staging
-            # External API
-            - name: external-api-production
-              url: https://api.oceansmart.com
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: External API
-                - targetLabel: environment
-                  replacement: Production
-            - name: external-api-preview
-              url: https://api-preview.oceansmart.com
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: External API
-                - targetLabel: environment
-                  replacement: Preview
-            - name: external-api-rc
-              url: https://os-api-rc.oiigds.com
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: External API
-                - targetLabel: environment
-                  replacement: RC
-            - name: external-api-staging
-              url: https://api.staging.oceansmart.com
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: External API
-                - targetLabel: environment
-                  replacement: Staging
-            # OCIMF
-            - name: ocimf-production
-              url: https://ocimf-content.oceansmart.com/ocimf/api/crew?ids=6701967
-              additionalRelabeling:
-                - targetLabel: service
-                  replacement: OCIMF
-                - targetLabel: environment
-                  replacement: Production
+
+  # prometheus-dashboards:
+  #   enabled: true
+  # prometheus-alerts:
+  #   enabled: true
+
+  # prometheus-web:
+  #   helm:
+  #     values:
+  #       grafana:
+  #         tlsSecretName: monitoring-tls
+  #         # annotations:
+  #         #   appgw.ingress.kubernetes.io/request-timeout: "3600"
+  #         #   appgw.ingress.kubernetes.io/ssl-redirect: "true"
+  #         #   appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399,401,403,404"
+  #         hosts:
+  #           - host: monitoring-np.oceansmart.com
+  #             paths:
+  #               - path: "/"
+  #                 pathType: Prefix
+  #       prometheus:
+  #         tlsSecretName: monitoring-tls
+  #         # annotations:
+  #         #   appgw.ingress.kubernetes.io/request-timeout: "3600"
+  #         #   appgw.ingress.kubernetes.io/ssl-redirect: "true"
+  #         #   appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399,401,403,404"
+  #         hosts:
+  #           - host: monitoring-np.oceansmart.com
+  #             paths:
+  #               - path: "/prometheus"
+  #                 pathType: Prefix
+  #       karma:
+  #         tlsSecretName: monitoring-tls
+  #         annotations:
+  #           # appgw.ingress.kubernetes.io/request-timeout: "3600"
+  #           # appgw.ingress.kubernetes.io/ssl-redirect: "true"
+  #           # appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399,401,403,404"
+  #         hosts:
+  #           - host: monitoring-np.oceansmart.com
+  #             paths:
+  #               - path: "/karma"
+  #                 pathType: Prefix
+
   # prometheus-stack-crds:
   #   helm:
   #     version: kube-prometheus-stack-45.9.0
 
-  prometheus-stack:
-    helm:
-      version: 45.9.0
-      values:
-        # prometheus:
-        #   prometheusSpec:
-        #     externalUrl: https://preview-monitoring.oceansmart.com
-        grafana:
-          additionalDataSources:
-            - name: Alertmanager (prod-us-east)
-              type: alertmanager
-              url: http://prometheus-alertmanager:9093
-              access: proxy
-              jsonData:
-                implementation: prometheus
-            - name: Prometheus (prod-us-east)
-              type: prometheus
-              url: http://prometheus-prometheus:9090
-              access: proxy
-              isDefault: true
-              jsonData:
-                timeInterval: 30s
-        # alertmanager:
-        #   alertmanagerSpec:
-        #     externalUrl: https://monitoring.oceansmart.com/karma
-        #   config:
-        #     route:
-        #       group_by: ["alertname"]
-        #       receiver: production-system
-        #       routes:
-        #         - receiver: "null"
-        #           match:
-        #             alertname: InfoInhibitor
-        #         - receiver: production-system
-        #           match_re:
-        #             alertname: ^(ApplicationDown|KubeNodeNotReady|KubePodCrashLooping|KubeDeploymentReplicasMismatch|KubeStatefulSetReplicasMismatch|KubeContainerWaiting|KubePersistentVolumeFillingUp)$
-        #         # - receiver: production-critical
-        #         #   match_re:
-        #         #     route: ^certificates$
-        #         # - receiver: production-system
-        #         #   match:
-        #         #     route: ingress
-        #         # - receiver: production-kafka
-        #         #   match:
-        #         #     route: kafka
-        #         # - receiver: production-pipelines
-        #         #   match:
-        #         #     route: pipelines
-        #     receivers:
-        #       - name: "null"
-        #       - name: "production-system"
-        #         slack_configs:
-        #           - api_url: ""
-        #             channel: "#alerts-test"
-        #             send_resolved: true
+  # prometheus-stack:
+  #   helm:
+  #     version: 45.9.0
+  #     values:
+  #       prometheus:
+  #         prometheusSpec:
+  #           externalUrl: https://monitoring-np.oceansmart.com/prometheus
+  #           routePrefix: "/prometheus"
+  #           additionalScrapeConfigsSecret:
+  #             enabled: true
+  #             name: redpanda-dev-scrape-config
+  #             key: redpanda-dev-scrape-config.yaml
+  #       grafana:
+  #         sidecar:
+  #           alerts:
+  #             enabled: true
+  #             label: redpanda_dev_alerts
+  #             labelValue: "1"
+  #             searchNamespace: ALL
+  #             watchMethod: WATCH
+  #             reloadURL: "http://localhost:3000/api/admin/provisioning/alerting/reload"

@@ -1,51 +1,84 @@
-# --- kube-prometheus-stack ---
 kube-prometheus-stack:
-  fullnameOverride: prometheus
-
-  grafana:
-    enabled: true
-    service:
-      type: NodePort
-    adminPassword: admin
   crds:
     enabled: false
-
-  kubeEtcd:
-    enabled: false
-  kubeProxy:
-    enabled: false
-  kubeScheduler:
-    enabled: false
-  kubeControllerManager:
-    enabled: false
-
-  kube-state-metrics:
-    enabled: true
-
-  prometheus:
-    prometheusSpec:
-      retention: 2d
-      storageSpec:
+  alertmanager:
+    alertmanagerSpec:
+      storage:
         volumeClaimTemplate:
+          metadata:
+            labels:
+              app: alertmanager
+            name: alertmanager-pvc
           spec:
-            storageClassName: standard   # Minikube default
             accessModes:
-              - ReadWriteOnce
+            - ReadWriteMany
             resources:
               requests:
                 storage: 5Gi
-      resources:
-        requests:
-          cpu: 200m
-          memory: 512Mi
-        limits:
-          cpu: 500m
-          memory: 1Gi
-
-# --- Loki disabled for first GitOps test ---
-loki-stack:
-  loki:
-    enabled: false
-  promtail:
-    enabled: false
-
+            selector:
+              matchLabels:
+                app: alertmanager
+            storageClassName: microk8s-hostpath
+  grafana:
+    grafana.ini:
+      server:
+        root_url: http://cwk8s01.shiptracks.com:31320/
+    ingress:
+      annotations:
+        kubernetes.io/ingress.class: nginx
+      enabled: true
+      hosts:
+      - cwk8s01.shiptracks.com
+      ingressClassName: nginx
+    persistence:
+      accessModes:
+      - ReadWriteMany
+      enabled: true
+      selector:
+        matchLabels:
+          app: grafana
+      size: 10Gi
+      storageClassName: microk8s-hostpath
+    service:
+      nodePort: 31320
+      type: NodePort
+  kubeControllerManager:
+    endpoints:
+    - 69.61.33.74
+    service:
+      ipFamilies:
+      - IPv4
+      ipFamilyPolicy: SingleStack
+  kubeScheduler:
+    endpoints:
+    - 69.61.33.74
+    service:
+      ipFamilies:
+      - IPv4
+      ipFamilyPolicy: SingleStack
+  prometheus:
+    prometheusSpec:
+      retention: 1y
+      scrapeConfigSelector:
+        matchLabels:
+          app: kube-prometheus-stack
+          release: kube-prometheus-stack
+      storageSpec:
+        volumeClaimTemplate:
+          metadata:
+            labels:
+              app: kube-prometheus-stack-prometheus
+            name: prometheus-pvc
+          spec:
+            accessModes:
+            - ReadWriteMany
+            resources:
+              requests:
+                storage: 1Ti
+            selector:
+              matchLabels:
+                app: kube-prometheus-stack-prometheus
+            storageClassName: microk8s-hostpath
+    service:
+      nodePort: 30113
+      type: NodePort

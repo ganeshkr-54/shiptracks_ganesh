@@ -8,7 +8,7 @@ argo:
     - resources-finalizer.argocd.argoproj.io
   syncPolicy:
     automated:
-      prune: true
+      prune: false
       selfHeal: true
       allowEmpty: false
     retry:
@@ -16,3 +16,6 @@ argo:
       backoff:
         duration: 10s
         factor: 2
+    syncOptions:
+      - ServerSideApply=true
+      - ApplyOutOfSyncOnly=true
